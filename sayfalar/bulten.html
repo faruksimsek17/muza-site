@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>İndirim Bülteni — Grosper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-page="bulletin" data-root="../">
+  <div id="site-header"></div>
+  <script src="../js/layout.js"></script>
+  <main class="page">
+    <div class="container">
+      <section class="page-hero">
+        <h1>İndirim Bülteni</h1>
+        <p>Haftalık fırsatları e-posta ile alın.</p>
+      </section>
+      <article class="page-card">
+        <form class="form" id="bulletin-form">
+          <label>Adınız
+            <input type="text" name="name" required>
+          </label>
+          <label>E-posta
+            <input type="email" name="email" required>
+          </label>
+          <button class="btn btn--red" type="submit">Bültene Katıl</button>
+          <p class="ok-msg" id="bulletin-ok">Kaydınız alındı. İlk fırsatlar yakında iletilecek.</p>
+        </form>
+      </article>
+    </div>
+  </main>
+  <div id="site-footer"></div>
+  <script>
+    document.getElementById("bulletin-form").addEventListener("submit", function (event) {
+      event.preventDefault();
+      document.getElementById("bulletin-ok").classList.add("is-visible");
+      event.target.reset();
+    });
+  </script>
+</body>
+</html>

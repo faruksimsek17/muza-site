@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giriş — Grosper Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="login-body">
+  <main class="login-card">
+    <img class="login-logo" src="../images/logo.png" alt="Grosper">
+    <h1>Yönetim Paneli</h1>
+    <p class="login-lead">İçerikleri, bannerları ve başvuruları buradan yönetin.</p>
+    <form id="login-form" class="login-form">
+      <label>Kullanıcı adı
+        <input type="text" name="user" autocomplete="username" required>
+      </label>
+      <label>Şifre
+        <input type="password" name="pass" autocomplete="current-password" required>
+      </label>
+      <p class="login-error" id="login-error" hidden>Kullanıcı adı veya şifre hatalı.</p>
+      <button class="btn btn-primary" type="submit">Giriş Yap</button>
+    </form>
+    <p class="login-hint">Giriş: <strong>admin</strong> / <strong>grosper</strong></p>
+  </main>
+  <script src="js/admin.js"></script>
+</body>
+</html>

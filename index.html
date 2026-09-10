@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grosper — Online Market</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="home" data-root="">
+  <div id="site-header"></div>
+  <script src="js/layout.js"></script>
+
+  <main>
+    <section class="hero-wrap">
+      <div class="container">
+        <div class="hero-slider" data-hero-slider>
+          <div class="hero-slider__viewport">
+          <button class="hero__arrow hero__arrow--prev" type="button" data-hero-prev aria-label="Önceki slayt">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+            <div class="hero-slider__track">
+              <a class="hero-slide hero-slider__slide" href="#kategoriler" aria-hidden="false">
+                <img src="images/slider-kartlar.jpg" alt="Grosper yemek kartları">
+              </a>
+              <a class="hero-slide hero-slider__slide" href="sayfalar/bulten.html" aria-hidden="true">
+                <img src="images/slider-bulten.jpg" alt="İndirim bültenimiz yayında">
+              </a>
+              <a class="hero-slide hero-slider__slide" href="sayfalar/subeler.html" aria-hidden="true">
+                <img src="images/slider-sube.jpg" alt="Taşdelen şube açılış indirimleri">
+              </a>
+            </div>
+          <button class="hero__arrow hero__arrow--next" type="button" data-hero-next aria-label="Sonraki slayt">
+            <svg viewBox="0 0 24 24" fill="none"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          </div>
+
+          <div class="hero__dots" role="tablist" aria-label="Banner slaytları">
+            <button type="button" class="is-active" data-hero-dot aria-label="1. slayt" aria-current="true"></button>
+            <button type="button" data-hero-dot aria-label="2. slayt"></button>
+            <button type="button" data-hero-dot aria-label="3. slayt"></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section categories" id="kategoriler">
+      <div class="container">
+        <h2 class="section__title">öne çıkan kategoriler</h2>
+        <div class="cat-grid">
+          <article class="cat-banner cat-banner--lg">
+            <img src="images/fruits.jpg" alt="Taze meyveler">
+            <h3>meyveler</h3>
+          </article>
+          <article class="cat-banner cat-banner--lg">
+            <img src="images/vegetables.jpg" alt="Taze sebzeler">
+            <h3>sebzeler</h3>
+          </article>
+          <div class="cat-grid__small">
+            <article class="cat-banner">
+              <img src="images/bread.jpg" alt="Ekmek">
+              <h3>ekmek ve fırın</h3>
+            </article>
+            <article class="cat-banner">
+              <img src="images/meat.jpg" alt="Et ürünleri">
+              <h3>et ve kümes hayvanları</h3>
+            </article>
+            <article class="cat-banner">
+              <img src="images/drinks.jpg" alt="İçecekler">
+              <h3>içecekler</h3>
+            </article>
+            <article class="cat-banner">
+              <img src="images/chips.jpg" alt="Atıştırmalıklar">
+              <h3>atıştırmalık ve cipsler</h3>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section promos">
+      <div class="container promo-grid">
+        <a class="promo" href="#kategoriler">
+          <img src="images/banner-zuccaciye.webp" alt="Züccaciye ürünlerinde fırsat indirimleri">
+        </a>
+        <a class="promo" href="#kategoriler">
+          <img src="images/banner-disbakim.webp" alt="Seçili Sensodyne ve Parodontax ürünlerinde yüzde 25 indirim">
+        </a>
+        <a class="promo" href="#kategoriler">
+          <img src="images/banner-deepep.webp" alt="Deepep Solution şampuanları şimdi Çağrı'da">
+        </a>
+      </div>
+    </section>
+
+    <section class="section delivery">
+      <div class="container">
+        <article class="delivery-banner">
+          <img src="images/woman.jpg" alt="Market teslimatı">
+          <div class="delivery-banner__copy">
+            <p class="delivery-banner__tag">Aynı gün teslimat</p>
+            <h2>Market alışverişiniz kapınıza kadar teslim ediliyor.</h2>
+            <p>Her zaman hizmetinizdeyiz.</p>
+            <a class="btn btn--red" href="sayfalar/subeler.html">Şimdi Sipariş Verin</a>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section brands" id="multimedya">
+      <div class="container">
+        <div class="brands__head">
+          <h2 class="section__title">öne çıkan markalar</h2>
+          <a class="brands__more" href="#">Daha fazlaını görüntüle</a>
+        </div>
+        <div class="brand-row">
+          <div class="brand-logo brand-logo--coke">Coca-Cola</div>
+          <div class="brand-logo brand-logo--dunkin">Dunkin’<small>Donuts</small></div>
+          <div class="brand-logo brand-logo--snickers">SNICKERS</div>
+          <div class="brand-logo brand-logo--nestle">Nestlé</div>
+          <div class="brand-logo brand-logo--starbucks">★ Starbucks</div>
+          <div class="brand-logo brand-logo--lipton">Lipton</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="site-footer"></div>
+  <script src="admin/js/store.js"></script>
+  <script src="js/banners.js"></script>
+  <script src="js/hero.js"></script>
+</body>
+</html>

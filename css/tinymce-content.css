@@ -1,0 +1,41 @@
+/* TinyMCE content_css — editör ve yayınlanan içerik aynı ölçüde kalsın */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+figure {
+  margin: 0 0 1em;
+  max-width: 100%;
+}
+
+figure img {
+  width: 100%;
+  height: auto;
+}
+
+table {
+  width: 100%;
+  max-width: 100%;
+  border-collapse: collapse;
+}
+
+p,
+h1,
+h2,
+h3,
+h4,
+ul,
+ol {
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  img,
+  figure,
+  table {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+}

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 220" fill="none">
+  <path d="M36 28c8-12 120-12 128 0l16 164c2 16-12 28-28 28H48c-16 0-30-12-28-28L36 28z" fill="#F2A100"/>
+  <path d="M40 52h120l10 128c1 10-8 18-18 18H48c-10 0-19-8-18-18L40 52z" fill="#E31C23"/>
+  <rect x="58" y="78" width="84" height="36" rx="8" fill="#fff"/>
+  <text x="100" y="102" text-anchor="middle" font-family="Arial Black, sans-serif" font-size="16" fill="#E31C23">CHEEZ</text>
+  <circle cx="100" cy="148" r="22" fill="#F2A100"/>
+</svg>

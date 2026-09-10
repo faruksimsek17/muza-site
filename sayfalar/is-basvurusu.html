@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>İş Başvurusu — Grosper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-page="contact" data-root="../">
+  <div id="site-header"></div>
+  <script src="../js/layout.js"></script>
+  <main class="page">
+    <div class="container">
+      <section class="page-hero">
+        <h1>İş Başvurusu</h1>
+        <p>Ekibimize katılmak için formu doldurun. Başvurunuz insan kaynaklarına iletilir.</p>
+      </section>
+      <article class="page-card">
+        <form class="form" id="job-form">
+          <label>Ad Soyad
+            <input type="text" name="name" required>
+          </label>
+          <label>E-posta
+            <input type="email" name="email" required>
+          </label>
+          <label>Telefon
+            <input type="tel" name="phone" required>
+          </label>
+          <label>Pozisyon
+            <select name="role" required>
+              <option value="">Seçiniz</option>
+              <option>Mağaza personeli</option>
+              <option>Kasa</option>
+              <option>Depo</option>
+              <option>Motokurye</option>
+              <option>İnsan kaynakları</option>
+            </select>
+          </label>
+          <label>Kısa özgeçmiş
+            <textarea name="note" required placeholder="Deneyiminizi kısaca yazın"></textarea>
+          </label>
+          <button class="btn btn--red" type="submit">Başvuruyu Gönder</button>
+          <p class="ok-msg" id="job-ok">Başvurunuz alındı. En kısa sürede dönüş yapacağız.</p>
+        </form>
+      </article>
+    </div>
+  </main>
+  <div id="site-footer"></div>
+  <script>
+    document.getElementById("job-form").addEventListener("submit", function (event) {
+      event.preventDefault();
+      document.getElementById("job-ok").classList.add("is-visible");
+      event.target.reset();
+    });
+  </script>
+</body>
+</html>
