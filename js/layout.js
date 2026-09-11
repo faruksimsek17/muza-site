@@ -4,12 +4,57 @@
   var home = root + "index.html";
   var p = root + "sayfalar/";
 
+  if (window.GrosperTheme) {
+    GrosperTheme.apply();
+  } else {
+    var themeScript = document.createElement("script");
+    themeScript.src = root + "js/theme.js?v=8";
+    document.head.appendChild(themeScript);
+  }
+
+  function loadScript(src, done) {
+    var script = document.createElement("script");
+    script.src = src;
+    script.onload = function () {
+      if (done) done();
+    };
+    script.onerror = function () {
+      if (done) done();
+    };
+    document.head.appendChild(script);
+  }
+
+  function bootBrand() {
+    function applyNow() {
+      if (window.GrosperBrand) GrosperBrand.apply(root);
+    }
+    function withBrand() {
+      if (window.GrosperBrand) {
+        applyNow();
+        return;
+      }
+      loadScript(root + "js/brand.js?v=2", applyNow);
+    }
+    function withFiles() {
+      if (window.GrosperFiles) {
+        withBrand();
+        return;
+      }
+      loadScript(root + "admin/js/files.js?v=8", withBrand);
+    }
+    if (window.GrosperStore) {
+      withFiles();
+      return;
+    }
+    loadScript(root + "admin/js/store.js?v=10", withFiles);
+  }
+
   function headerHtml() {
     return (
       '<header class="header">' +
         '<div class="container header__inner">' +
           '<a class="logo" href="' + home + '" aria-label="Grosper anasayfa">' +
-            '<img class="logo__img" src="' + root + 'images/logo.png" alt="Grosper — Alışverişe değer!" width="220" height="80" style="max-width:100%;height:auto;display:block;">' +
+            '<img class="logo__img" src="' + root + 'images/logo.png" alt="Grosper — Alışverişe değer!" width="220" height="80" data-brand="header">' +
           "</a>" +
           '<a class="header-cta" href="' + p + 'bulten.html">İndirim Bülteni</a>' +
           '<input type="checkbox" id="nav-toggle" class="nav-toggle" hidden>' +
@@ -87,6 +132,7 @@
       '<footer class="footer">' +
         '<div class="container footer__grid">' +
           "<div>" +
+            '<img class="footer__logo" data-brand="footer" alt="Grosper" hidden>' +
             "<h3>Hızlı İletişim</h3>" +
             "<p>Telefon: 0216 517 28 05</p>" +
             "<p>E-Posta: info@grosper.com.tr</p>" +
@@ -147,10 +193,12 @@
     document.addEventListener("DOMContentLoaded", function () {
       bindFooter();
       markActive();
+      bootBrand();
     });
   } else {
     bindFooter();
     markActive();
+    bootBrand();
   }
 
   markActive();

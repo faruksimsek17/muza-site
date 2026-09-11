@@ -3,42 +3,65 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>İndirim Bülteni — Grosper</title>
+  <title>Güncel Katalog — Grosper</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
+  <script src="../js/theme.js?v=8"></script>
 </head>
 <body data-page="bulletin" data-root="../">
   <div id="site-header"></div>
-  <script src="../js/layout.js"></script>
+  <script src="../js/layout.js?v=9"></script>
   <main class="page">
     <div class="container">
-      <section class="page-hero">
-        <h1>İndirim Bülteni</h1>
-        <p>Haftalık fırsatları e-posta ile alın.</p>
+      <section class="catalog-head">
+        <h1>Güncel Katalog</h1>
+        <p>Haftalık indirim kataloglarımızı inceleyin veya ürünlere göz atın.</p>
       </section>
-      <article class="page-card">
-        <form class="form" id="bulletin-form">
-          <label>Adınız
-            <input type="text" name="name" required>
-          </label>
-          <label>E-posta
-            <input type="email" name="email" required>
-          </label>
-          <button class="btn btn--red" type="submit">Bültene Katıl</button>
-          <p class="ok-msg" id="bulletin-ok">Kaydınız alındı. İlk fırsatlar yakında iletilecek.</p>
-        </form>
-      </article>
+      <div class="catalog-grid" id="catalog-grid">
+        <article class="catalog-card">
+          <div class="catalog-card__cover">
+            <img src="../images/katalog-kapak.jpg" alt="5 Günlük Dev İndirim">
+          </div>
+          <div class="catalog-card__body">
+            <h2>5 Günlük Dev İndirim</h2>
+            <p>Stoklarla sınırlı haftalık indirim fırsatlarını kaçırmayın.</p>
+            <div class="catalog-card__actions">
+              <a class="btn btn--catalog" href="../files/katalog.pdf" target="_blank" rel="noopener">Online Katalog <span class="btn--catalog-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M10 7l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+            </div>
+          </div>
+        </article>
+        <article class="catalog-card">
+          <div class="catalog-card__cover">
+            <img src="../images/katalog-kasap.jpg" alt="Kasap Bölüm Fırsatları">
+          </div>
+          <div class="catalog-card__body">
+            <h2>Kasap Bölüm Fırsatları</h2>
+            <p>Stoklarla sınırlı haftalık indirim fırsatlarını kaçırmayın.</p>
+            <div class="catalog-card__actions">
+              <a class="btn btn--catalog" href="../files/katalog.pdf" target="_blank" rel="noopener">Online Katalog <span class="btn--catalog-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M10 7l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+            </div>
+          </div>
+        </article>
+        <article class="catalog-card">
+          <div class="catalog-card__cover">
+            <img src="../images/katalog-haftalik.jpg" alt="Haftalık Fırsatlar">
+          </div>
+          <div class="catalog-card__body">
+            <h2>Haftalık Fırsatlar</h2>
+            <p>Bu haftanın indirimli ürünlerini kaçırmayın.</p>
+            <div class="catalog-card__actions">
+              <a class="btn btn--catalog" href="../files/katalog.pdf" target="_blank" rel="noopener">Online Katalog <span class="btn--catalog-arrow" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M10 7l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span></a>
+            </div>
+          </div>
+        </article>
+      </div>
     </div>
   </main>
   <div id="site-footer"></div>
-  <script>
-    document.getElementById("bulletin-form").addEventListener("submit", function (event) {
-      event.preventDefault();
-      document.getElementById("bulletin-ok").classList.add("is-visible");
-      event.target.reset();
-    });
-  </script>
+  <script src="../admin/js/store.js?v=5"></script>
+  <script src="../admin/js/files.js?v=5"></script>
+  <script src="../js/catalogs.js?v=5"></script>
 </body>
 </html>

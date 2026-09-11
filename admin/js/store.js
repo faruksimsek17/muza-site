@@ -1,5 +1,7 @@
 (function (window) {
   var KEY = "grosper-cms-v1";
+  var THEME_KEY = "grosper-theme-v1";
+  var BRAND_KEY = "grosper-brand-v1";
 
   function uid() {
     return "id-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
@@ -50,6 +52,12 @@
         { id: uid(), name: "Elif Yılmaz", email: "elif@example.com", phone: "0532 111 22 33", role: "Kasa", note: "3 yıl market deneyimim var.", date: "2026-09-09", status: "yeni" },
         { id: uid(), name: "Burak Demir", email: "burak@example.com", phone: "0533 444 55 66", role: "Motokurye", note: "Kadıköy bölgesinde çalışabilirim.", date: "2026-09-07", status: "incelendi" }
       ],
+      catalogs: [
+        { id: uid(), title: "5 Günlük Dev İndirim", summary: "Stoklarla sınırlı haftalık indirim fırsatlarını kaçırmayın.", image: "../images/katalog-kapak.jpg", pdf: "../files/katalog.pdf", pdfName: "katalog.pdf", productsLink: "../index.html#kategoriler", status: "yayinda" },
+        { id: uid(), title: "Kasap Bölüm Fırsatları", summary: "Stoklarla sınırlı haftalık indirim fırsatlarını kaçırmayın.", image: "../images/katalog-kasap.jpg", pdf: "../files/katalog.pdf", pdfName: "katalog.pdf", productsLink: "", status: "yayinda" },
+        { id: uid(), title: "Haftalık Fırsatlar", summary: "Bu haftanın indirimli ürünlerini kaçırmayın.", image: "../images/katalog-haftalik.jpg", pdf: "../files/katalog.pdf", pdfName: "katalog.pdf", productsLink: "../index.html#kategoriler", status: "yayinda" }
+      ],
+      catalogFileVersion: 2,
       subscribers: [
         { id: uid(), name: "Canan Aksoy", email: "canan@example.com", date: "2026-09-10" },
         { id: uid(), name: "Kemal Uçar", email: "kemal@example.com", date: "2026-09-06" }
@@ -81,7 +89,26 @@
       settings: {
         phone: "0216 517 28 05",
         email: "info@grosper.com.tr",
-        address: "Yakacık Caddesi No:130/2, İstanbul / Kartal"
+        address: "Yakacık Caddesi No:130/2, İstanbul / Kartal",
+        theme: {
+          primary: "#e30613",
+          primaryDark: "#c10510",
+          ink: "#111111",
+          bg: "#f6f7f9",
+          border: "#ececec",
+          muted: "#6b6b6b",
+          headerBg: "#e30613",
+          headerText: "#ffffff",
+          footerBg: "#0d0d0d",
+          footerText: "#f3f3f3"
+        },
+        brand: {
+          headerLogo: "images/logo.png",
+          footerLogo: "",
+          hideFooterLogo: false,
+          favicon: "",
+          ogImage: ""
+        }
       },
       stats: {
         users: 16433,
@@ -95,35 +122,145 @@
     };
   }
 
+  function isDataUrl(value) {
+    return typeof value === "string" && (value.indexOf("data:") === 0 || value === "pending");
+  }
+
+  function stripItemBinaries(item, imageFallback, pdfFallback) {
+    if (!item) return;
+    if (isDataUrl(item.image) || isDataUrl(item.desktopImage)) {
+      item.image = imageFallback || "";
+      if (item.desktopImage) item.desktopImage = imageFallback || "";
+    }
+    if (isDataUrl(item.pdf)) {
+      item.pdf = pdfFallback || "../files/katalog.pdf";
+      item.pdfName = item.pdfName && !isDataUrl(item.pdfName) ? item.pdfName : "katalog.pdf";
+    }
+  }
+
+  function stripCatalogs(data) {
+    (data.catalogs || []).forEach(function (item, index) {
+      stripItemBinaries(item, index === 0 ? "../images/katalog-kapak.jpg" : "../images/katalog-kasap.jpg", "../files/katalog.pdf");
+    });
+    return data;
+  }
+
+  function stripAllBinaries(data) {
+    stripCatalogs(data);
+    (data.sliders || []).forEach(function (item) {
+      stripItemBinaries(item, "../images/slider-kartlar.jpg");
+    });
+    (data.banners || []).forEach(function (item) {
+      stripItemBinaries(item, "../images/banner-zuccaciye.webp");
+    });
+    (data.news || []).forEach(function (item) {
+      stripItemBinaries(item, "../images/fruits.jpg");
+    });
+    (data.gallery || []).forEach(function (item) {
+      stripItemBinaries(item, "../images/fruits.jpg");
+    });
+    stripBrand(data);
+    return data;
+  }
+
+  function defaultBrand() {
+    return {
+      headerLogo: "images/logo.png",
+      footerLogo: "",
+      hideFooterLogo: false,
+      favicon: "",
+      ogImage: ""
+    };
+  }
+
+  function stripBrand(data) {
+    if (!data.settings) return data;
+    data.settings.brand = Object.assign({}, defaultBrand(), data.settings.brand || {});
+    ["headerLogo", "footerLogo", "favicon", "ogImage"].forEach(function (key) {
+      if (isDataUrl(data.settings.brand[key])) {
+        data.settings.brand[key] = key === "headerLogo" ? "images/logo.png" : "";
+      }
+    });
+    return data;
+  }
+
+  function slimCatalogs(list) {
+    return (list || []).map(function (item) {
+      return {
+        id: item.id,
+        title: item.title || "",
+        summary: item.summary || "",
+        status: item.status || "yayinda",
+        image: isDataUrl(item.image) ? "../images/katalog-kapak.jpg" : (item.image || "../images/katalog-kapak.jpg"),
+        pdf: isDataUrl(item.pdf) || !item.pdf ? "../files/katalog.pdf" : item.pdf,
+        pdfName: item.pdfName && !isDataUrl(item.pdfName) ? item.pdfName : "katalog.pdf",
+        productsLink: item.productsLink || ""
+      };
+    });
+  }
+
+  function persist(data) {
+    var json = JSON.stringify(data);
+    try {
+      window.localStorage.setItem(KEY, json);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
   function read() {
     try {
       var raw = window.localStorage.getItem(KEY);
       if (!raw) {
         var fresh = seed();
-        window.localStorage.setItem(KEY, JSON.stringify(fresh));
+        persist(fresh);
         return fresh;
       }
       var parsed = JSON.parse(raw);
       var fresh = seed();
       Object.keys(fresh).forEach(function (key) {
+        if (key === "catalogFileVersion") return;
         if (parsed[key] == null) parsed[key] = fresh[key];
       });
       var oldSlider = (parsed.sliders || []).some(function (item) {
         return item.title === "Tatil promosyonları" || (item.image || "").indexOf("eggs.jpg") !== -1;
       });
-      if (oldSlider) {
-        parsed.sliders = fresh.sliders;
-        window.localStorage.setItem(KEY, JSON.stringify(parsed));
+      if (oldSlider) parsed.sliders = fresh.sliders;
+      stripCatalogs(parsed);
+      (parsed.catalogs || []).forEach(function (item, index) {
+        if (item.productsLink == null) {
+          item.productsLink = index === 1 ? "" : "../index.html#kategoriler";
+        }
+      });
+      if ((parsed.catalogs || []).length === 2 && fresh.catalogs[2]) {
+        parsed.catalogs.push(Object.assign({}, fresh.catalogs[2], { id: uid() }));
       }
+      parsed.catalogFileVersion = 3;
+      persist(parsed) || persist(stripAllBinaries(parsed));
       return parsed;
     } catch (error) {
-      return seed();
+      var fallback = seed();
+      persist(fallback);
+      return fallback;
     }
   }
 
   function write(data) {
-    window.localStorage.setItem(KEY, JSON.stringify(data));
-    return data;
+    stripCatalogs(data);
+    stripBrand(data);
+    if (persist(data)) return data;
+    stripAllBinaries(data);
+    if (persist(data)) return data;
+    window.localStorage.removeItem(KEY);
+    if (persist(data)) return data;
+    var fresh = seed();
+    fresh.catalogs = slimCatalogs(data.catalogs || fresh.catalogs);
+    if (!persist(fresh)) {
+      window.localStorage.removeItem(KEY);
+      persist(seed());
+    }
+    return fresh;
   }
 
   function list(collection) {
@@ -156,13 +293,87 @@
   }
 
   function getSettings() {
-    return read().settings || {};
+    var settings = read().settings || {};
+    var fresh = seed().settings;
+    if (!settings.theme) settings.theme = Object.assign({}, fresh.theme);
+    Object.keys(fresh.theme).forEach(function (key) {
+      if (!settings.theme[key]) settings.theme[key] = fresh.theme[key];
+    });
+    settings.brand = Object.assign({}, defaultBrand(), settings.brand || {});
+    return settings;
   }
 
   function saveSettings(settings) {
     var data = read();
-    data.settings = settings;
+    var current = data.settings || {};
+    data.settings = Object.assign({}, current, settings);
+    if (settings.theme) {
+      data.settings.theme = Object.assign({}, current.theme || seed().settings.theme, settings.theme);
+    }
     return write(data);
+  }
+
+  function getTheme() {
+    var theme = Object.assign({}, seed().settings.theme, (getSettings().theme || {}));
+    try {
+      var standalone = JSON.parse(window.localStorage.getItem(THEME_KEY) || "null");
+      if (standalone && typeof standalone === "object") {
+        Object.keys(theme).forEach(function (key) {
+          if (standalone[key]) theme[key] = standalone[key];
+        });
+      }
+    } catch (error) {}
+    return theme;
+  }
+
+  function getBrand() {
+    var brand = Object.assign({}, defaultBrand(), (getSettings().brand || {}));
+    try {
+      var standalone = JSON.parse(window.localStorage.getItem(BRAND_KEY) || "null");
+      if (standalone && typeof standalone === "object") {
+        Object.keys(defaultBrand()).forEach(function (key) {
+          if (key === "hideFooterLogo") {
+            if (standalone[key] != null) brand[key] = !!standalone[key];
+            return;
+          }
+          if (standalone[key]) brand[key] = standalone[key];
+        });
+      }
+    } catch (error) {}
+    return brand;
+  }
+
+  function saveBrand(brand) {
+    var next = Object.assign({}, defaultBrand());
+    Object.keys(next).forEach(function (key) {
+      if (key === "hideFooterLogo") {
+        next[key] = !!(brand && brand[key]);
+        return;
+      }
+      if (brand && brand[key]) next[key] = brand[key];
+    });
+    try {
+      window.localStorage.setItem(BRAND_KEY, JSON.stringify(next));
+    } catch (error) {}
+    var settings = getSettings();
+    settings.brand = next;
+    try {
+      saveSettings(settings);
+    } catch (error) {}
+    return next;
+  }
+
+  function saveTheme(theme) {
+    var next = Object.assign({}, seed().settings.theme, theme);
+    try {
+      window.localStorage.setItem(THEME_KEY, JSON.stringify(next));
+    } catch (error) {}
+    var settings = getSettings();
+    settings.theme = next;
+    try {
+      saveSettings(settings);
+    } catch (error) {}
+    return next;
   }
 
   function getStats() {
@@ -178,6 +389,8 @@
 
   function reset() {
     window.localStorage.removeItem(KEY);
+    window.localStorage.removeItem(THEME_KEY);
+    window.localStorage.removeItem(BRAND_KEY);
     return read();
   }
 
@@ -189,6 +402,10 @@
     remove: remove,
     getSettings: getSettings,
     saveSettings: saveSettings,
+    getTheme: getTheme,
+    saveTheme: saveTheme,
+    getBrand: getBrand,
+    saveBrand: saveBrand,
     getStats: getStats,
     bumpStat: bumpStat,
     reset: reset
