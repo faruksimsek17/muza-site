@@ -165,6 +165,31 @@ textarea {
   gap: 4px;
 }
 
+.nav-group {
+  display: grid;
+  gap: 2px;
+}
+
+.nav-group__parent {
+  font-weight: 700;
+}
+
+.nav-group__subs {
+  display: grid;
+  gap: 2px;
+  padding: 0 0 4px 10px;
+}
+
+.nav-link--sub {
+  font-size: 13px;
+  padding: 8px 12px;
+}
+
+.nav-group.is-open .nav-group__parent {
+  background: #2a2a2a;
+  color: #fff;
+}
+
 .sidebar a,
 .sidebar button.nav-link {
   display: flex;
@@ -771,6 +796,40 @@ th {
   margin: 0;
 }
 
+.about-pick {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.about-pick__card {
+  display: grid;
+  gap: 8px;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 22px 20px;
+  cursor: pointer;
+  color: inherit;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+}
+
+.about-pick__card h3 {
+  font-size: 18px;
+}
+
+.about-pick__card p {
+  color: #6b6b6b;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.about-pick__card:hover {
+  border-color: #d0d0d0;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.07);
+}
+
 @media (max-width: 980px) {
   .admin {
     grid-template-columns: 1fr;
@@ -792,12 +851,17 @@ th {
     margin-top: 0;
   }
 
+  .nav-group {
+    grid-column: 1 / -1;
+  }
+
   .stat-grid,
   .form-grid,
   .upload-grid,
   .color-grid,
   .color-grid--2,
-  .brand-grid {
+  .brand-grid,
+  .about-pick {
     grid-template-columns: 1fr;
   }
 }

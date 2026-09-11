@@ -12,7 +12,7 @@
 </head>
 <body data-page="contact" data-root="../">
   <div id="site-header"></div>
-  <script src="../js/layout.js?v=9"></script>
+  <script src="../js/layout.js?v=10"></script>
   <main class="page">
     <div class="container">
       <section class="page-hero">
@@ -40,22 +40,26 @@
               <option>İnsan kaynakları</option>
             </select>
           </label>
+          <label>Fotoğraf
+            <span class="form-file">
+              <span class="form-file__btn">Dosya Seç<input type="file" name="photo" accept="image/*" required hidden></span>
+              <span class="form-file__name" data-filename>Dosya seçilmedi</span>
+            </span>
+            <img class="form-file__preview" id="job-photo-preview" alt="" hidden>
+          </label>
           <label>Kısa özgeçmiş
             <textarea name="note" required placeholder="Deneyiminizi kısaca yazın"></textarea>
           </label>
           <button class="btn btn--red" type="submit">Başvuruyu Gönder</button>
           <p class="ok-msg" id="job-ok">Başvurunuz alındı. En kısa sürede dönüş yapacağız.</p>
+          <p class="form-error" id="job-error" hidden>Fotoğraf 5 MB’den büyük olamaz.</p>
         </form>
       </article>
     </div>
   </main>
   <div id="site-footer"></div>
-  <script>
-    document.getElementById("job-form").addEventListener("submit", function (event) {
-      event.preventDefault();
-      document.getElementById("job-ok").classList.add("is-visible");
-      event.target.reset();
-    });
-  </script>
+  <script src="../admin/js/store.js?v=10"></script>
+  <script src="../admin/js/files.js?v=8"></script>
+  <script src="../js/jobs.js?v=1"></script>
 </body>
 </html>

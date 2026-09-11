@@ -1178,6 +1178,32 @@ body.nav-open .drawer {
   max-width: 640px;
 }
 
+.branch-select {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  max-width: 420px;
+}
+
+.branch-select span {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink, #111);
+}
+
+.branch-select select {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--line, #ececec);
+  border-radius: 12px;
+  background: #fff;
+  color: #222;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+}
+
 .page-card {
   background: var(--white);
   border-radius: 18px;
@@ -1187,6 +1213,16 @@ body.nav-open .drawer {
 
 .page-card + .page-card {
   margin-top: 14px;
+}
+
+.page-card__photo {
+  display: block;
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 14px;
+  margin-bottom: 16px;
+  background: #f3f3f3;
 }
 
 .page-grid {
@@ -1231,6 +1267,67 @@ body.nav-open .drawer {
 .branch-card h3 {
   font-size: 18px;
   margin-bottom: 8px;
+}
+
+.branch-card__address {
+  margin-bottom: 12px;
+}
+
+.branch-pills {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.branch-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 0;
+  gap: 5px;
+  min-width: 0;
+  min-height: 28px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1.3px solid #d8d8d8;
+  background: #fff;
+  color: #222;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.branch-pill svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+.branch-pill--hours {
+  border-color: #3db7d4;
+}
+
+.branch-pill--hours svg {
+  color: #3db7d4;
+}
+
+.branch-pill--phone {
+  border-color: #f18a2b;
+}
+
+.branch-pill--phone svg {
+  color: #f18a2b;
+}
+
+.branch-pill--map {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.branch-pill--map svg {
+  color: currentColor;
 }
 
 .news-card p,
@@ -1312,6 +1409,46 @@ body.nav-open .drawer {
 .form textarea {
   min-height: 120px;
   resize: vertical;
+}
+
+.form-file {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid #e4e4e4;
+  border-radius: 12px;
+  background: #fafafa;
+  font-weight: 500;
+}
+
+.form-file__btn {
+  background: #fff;
+  padding: 10px 16px;
+  border-right: 1px solid #e4e4e4;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.form-file__name {
+  padding: 10px 16px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.form-file__preview {
+  margin-top: 10px;
+  width: 112px;
+  height: 112px;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #f3f3f3;
+}
+
+.form-error {
+  color: var(--red);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .stars {

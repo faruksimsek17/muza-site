@@ -46,7 +46,7 @@
       withFiles();
       return;
     }
-    loadScript(root + "admin/js/store.js?v=10", withFiles);
+    loadScript(root + "admin/js/store.js?v=15", withFiles);
   }
 
   function headerHtml() {
@@ -136,7 +136,7 @@
             "<h3>Hızlı İletişim</h3>" +
             "<p>Telefon: 0216 517 28 05</p>" +
             "<p>E-Posta: info@grosper.com.tr</p>" +
-            "<p>Adres: Yakacık Caddesi No:130/2<br>İstanbul / Kartal</p>" +
+            "<p>Adres: Çavuşoğlu Mh. Yakacık Cd. No:130<br>Kartal / İstanbul</p>" +
           "</div>" +
           "<div>" +
             "<h3>Biz Kimiz</h3>" +

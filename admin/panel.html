@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/admin.css?v=11">
+  <link rel="stylesheet" href="css/admin.css?v=12">
 </head>
 <body>
   <div class="admin">
@@ -18,6 +18,14 @@
         <button type="button" class="nav-link" data-view="sliders">Slider</button>
         <button type="button" class="nav-link" data-view="banners">Blok Banner</button>
         <button type="button" class="nav-link" data-view="news">Haberler</button>
+        <div class="nav-group" data-group="about">
+          <button type="button" class="nav-link nav-group__parent" data-view="about">Hakkımızda</button>
+          <div class="nav-group__subs">
+            <button type="button" class="nav-link nav-link--sub" data-view="about-corporate">Kurumsal</button>
+            <button type="button" class="nav-link nav-link--sub" data-view="about-references">Referanslar</button>
+            <button type="button" class="nav-link nav-link--sub" data-view="about-documents">Belgelerimiz</button>
+          </div>
+        </div>
         <button type="button" class="nav-link" data-view="gallery">Öne Çıkan Kategoriler</button>
         <button type="button" class="nav-link" data-view="videos">Videolar</button>
         <button type="button" class="nav-link" data-view="branches">Şubeler</button>
@@ -47,9 +55,9 @@
     </div>
   </div>
   <div class="toast" id="toast"></div>
-  <script src="js/store.js?v=10"></script>
+  <script src="js/store.js?v=15"></script>
   <script src="js/files.js?v=8"></script>
   <script src="../js/theme.js?v=8"></script>
-  <script src="js/admin.js?v=12"></script>
+  <script src="js/admin.js?v=16"></script>
 </body>
 </html>

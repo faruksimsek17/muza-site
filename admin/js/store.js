@@ -7,6 +7,64 @@
     return "id-" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   }
 
+  function defaultBranches() {
+    return [
+      { name: "Merkez Depo", address: "Çavuşoğlu Mh. Yakacık Cd. No:130 Kartal / İstanbul", phone: "0216 517 28 05" },
+      { name: "Soğanlık 1 Şube", address: "Gümüşpınar Mh. Atatürk Cd. No:16/1 Kartal / İstanbul", phone: "0216 452 20 00" },
+      { name: "Soğanlık 2 Şube", address: "Yahya Kemal Beyatlı Cd. No:10 Soğanlık Kartal / İstanbul", phone: "0216 452 77 40" },
+      { name: "Esenkent Şube", address: "Malazgirt Cd. Merkezi Cami Altı Esenkent / İstanbul", phone: "0216 376 53 52" },
+      { name: "Göztepe Şube", address: "Eğitim Mh. Nahit Bey Sk. No:24 Kuyubaşı Kadıköy / İstanbul", phone: "0216 551 10 33" },
+      { name: "Karabekir Şube", address: "Kazım Karabekir Mh. Adem Yavuz Cd. No:93 Ümraniye / İstanbul", phone: "0216 630 33 09" },
+      { name: "Cevizli Şube", address: "Cevizli Mh. Orhangazi Cd. Önbaşı Sk. No:1 Maltepe / İstanbul", phone: "0216 457 05 30" },
+      { name: "Ünalan Şube", address: "Ünalan Mh. Ayazma Cd. No:24 Üsküdar / İstanbul", phone: "0216 317 65 50" },
+      { name: "Örnek Mh. Şube", address: "Örnek Mh. Yunus Emre Cd. No:8 BİLSEA YAPI Ataşehir / İstanbul", phone: "0216 565 71 74" },
+      { name: "Çarşı Şube", address: "Namık Kemal Mh. Cengiz Topel Cd. Erciyes Sk. No:2 Ümraniye / İstanbul", phone: "0216 316 00 35" },
+      { name: "Doğanevler Şube", address: "Tepeüstü Mh. Doğanevler Cd. Manidar Sk. No:1 Ümraniye / İstanbul", phone: "0216 540 55 67" },
+      { name: "Çakmak Şube", address: "Armağan Evler Mh. Mithatpaşa Cd. No:138/A Çakmak / Ümraniye / İstanbul", phone: "0216 521 73 74" },
+      { name: "Santral Şube", address: "Tantavi Mh. Su İş Cd. No:13 Ümraniye / İstanbul", phone: "0216 316 10 30" },
+      { name: "Sultanbeyli Şube", address: "Necip Fazıl Mh. Trabzon Cd. Farabi Sk. No:1 Sultanbeyli / İstanbul", phone: "0216 497 73 39" },
+      { name: "Tavukçuyolu Şube", address: "Mehmet Akif Mh. Şahin Cd. No:1 Ümraniye / İstanbul", phone: "0216 504 11 88" },
+      { name: "Bulgurlu Şube", address: "Bulgurlu Mh. Bulgurlu Cd. No:115 Üsküdar / İstanbul", phone: "0216 376 84 08" },
+      { name: "Sondurak Şube", address: "İstiklal Mh. Mihraç Cd. No:11-13 Ümraniye / İstanbul", phone: "0216 482 11 82" },
+      { name: "Kavacık Şube", address: "Kavacık Mh. Otağtepe Cd. No:62 Beykoz / İstanbul", phone: "0216 465 45 87" },
+      { name: "Selimiye Şube", address: "Selimiye Mh. Tıbbiye Cd. No:18 Üsküdar / İstanbul", phone: "0216 530 00 12" },
+      { name: "Battalgazi Şube", address: "Battalgazi Mh. Bosna Bulvarı No:124 Sultanbeyli / İstanbul", phone: "0216 592 22 14" },
+      { name: "Zeynep Kamil Şube", address: "Zeynep Kamil Mh. Fahri Atabey Cd. No:126-128 Üsküdar / İstanbul", phone: "0216 452 22 44" },
+      { name: "Belediye Şube", address: "Atatürk Mh. Ayazma Cd. No:32-36 Ümraniye / İstanbul", phone: "0216 517 28 05" },
+      { name: "Osmangazi Şube", address: "Osmangazi Mh. Alsancak Cd. No:8-10 Sancaktepe / İstanbul", phone: "0216 517 28 05" },
+      { name: "Kaynarca Şube", address: "Kaynarca Mh. Kanuni Sultan Süleyman Cd. No:28-A-B Pendik / İstanbul", phone: "0216 517 28 05" },
+      { name: "Karlıktepe Şube", address: "Karlıktepe Mah. Atılgan Sokak No:2/A Kartal / İstanbul", phone: "0216 517 28 05" },
+      { name: "Taşdelen Şube", address: "Sultançiftliği Mh. Turgut Özal Bulvarı No:127 Taşdelen / Çekmeköy / İstanbul", phone: "0216 517 28 05" },
+      { name: "Adil Mh. Şube", address: "Adil Mah. Hamidiye Cd. No:146 Sultanbeyli / İstanbul", phone: "0216 517 28 05" }
+    ].map(function (item) {
+      return {
+        id: uid(),
+        name: item.name,
+        address: item.address,
+        phone: item.phone,
+        hours: item.hours || "09:00-21:30",
+        mapUrl: item.mapUrl || ""
+      };
+    });
+  }
+
+  function defaultAbout() {
+    return {
+      corporate: {
+        title: "Kurumsal",
+        lead: "Grosper, taze ürünleri ve aynı gün teslimatıyla mahalle marketini dijitalleştiren bir online market markasıdır."
+      },
+      references: {
+        title: "Referanslar",
+        lead: "Birlikte çalıştığımız markalar ve iş ortaklarımız."
+      },
+      documents: {
+        title: "Belgelerimiz",
+        lead: "Kalite, hijyen ve yasal uygunluk belgelerimiz."
+      }
+    };
+  }
+
   function seed() {
     return {
       sliders: [
@@ -37,12 +95,8 @@
         { id: uid(), title: "Taze meyve sebze", url: "https://www.youtube.com/embed/lTRiuFIWV54" },
         { id: uid(), title: "Market alışverişi", url: "https://www.youtube.com/embed/3JZ_D3ELwOQ" }
       ],
-      branches: [
-        { id: uid(), name: "Kartal / Yakacık", address: "Yakacık Caddesi No:130/2", phone: "0216 517 28 05", hours: "08:00 – 22:00" },
-        { id: uid(), name: "Kadıköy / Caferağa", address: "Moda Caddesi No:48", phone: "0216 330 11 22", hours: "08:00 – 23:00" },
-        { id: uid(), name: "Maltepe / Bağlarbaşı", address: "Bağlarbaşı Mah. Atatürk Cad. No:17", phone: "0216 441 09 09", hours: "08:00 – 22:00" },
-        { id: uid(), name: "Pendik / Çamçeşme", address: "Çamçeşme Mah. Deniz Cad. No:9", phone: "0216 491 70 70", hours: "08:00 – 22:00" }
-      ],
+      branches: defaultBranches(),
+      branchesVersion: 2,
       reviews: [
         { id: uid(), name: "Ayşe K.", city: "Kartal", stars: 5, text: "Akşam 7’de verdiğim sipariş 50 dakikada geldi. Meyveler gerçekten taze.", status: "yayinda" },
         { id: uid(), name: "Mert D.", city: "Kadıköy", stars: 5, text: "Kurye çok ilgiliydi, eksik ürün olursa hemen arıyorlar.", status: "yayinda" },
@@ -77,6 +131,26 @@
         { id: uid(), title: "Sensodyne paket", price: "129,90 ₺", status: "yayinda" },
         { id: uid(), title: "Deepep şampuan", price: "189,00 ₺", status: "yayinda" }
       ],
+      about: defaultAbout(),
+      aboutSections: [
+        { id: uid(), title: "Hikayemiz", body: "2016’dan bu yana İstanbul’da başlayan yolculuğumuz, müşterilerimize taze meyve-sebzeden temel gıdaya kadar binlerce ürünü kapıya kadar ulaştırma hedefiyle büyüdü." },
+        { id: uid(), title: "Misyonumuz", body: "Kaliteli ürünü adil fiyatla, hızlı ve güvenilir teslimatla sunmak. Her siparişte şeffaf, taze ve ulaşılabilir bir alışveriş deneyimi vermek." },
+        { id: uid(), title: "Vizyonumuz", body: "Türkiye’nin en güvenilen mahalle marketi olmak ve her evin günlük ihtiyacını tek bir uygulamadan karşılamak." }
+      ],
+      aboutRefs: [
+        { id: uid(), title: "Nestlé", text: "Kahvaltılık ve süt ürünleri tedarik partneri." },
+        { id: uid(), title: "Coca-Cola", text: "İçecek kategorisinde ulusal dağıtım iş birliği." },
+        { id: uid(), title: "Ülker", text: "Atıştırmalık ve fırın ürünleri referans müşterisi." },
+        { id: uid(), title: "Pınar", text: "Süt ve şarküteri ürünlerinde düzenli tedarik." },
+        { id: uid(), title: "Lipton", text: "Çay ve sıcak içecek reyonu iş ortaklığı." },
+        { id: uid(), title: "Eti", text: "Bisküvi ve çocuk atıştırmalıkları kategorisi." }
+      ],
+      aboutDocs: [
+        { id: uid(), title: "ISO 9001", text: "Kalite yönetim sistemi belgesi.", file: "", fileName: "" },
+        { id: uid(), title: "ISO 22000", text: "Gıda güvenliği yönetim sistemi belgesi.", file: "", fileName: "" },
+        { id: uid(), title: "Helal Uygunluk", text: "Seçili ürün gruplarında helal belgesi.", file: "", fileName: "" },
+        { id: uid(), title: "Ticaret Sicil", text: "Şirket ticaret sicil gazetesi özeti.", file: "", fileName: "" }
+      ],
       pages: [
         { id: uid(), title: "Kurumsal", slug: "kurumsal" },
         { id: uid(), title: "İnsan Kaynakları", slug: "insan-kaynaklari" }
@@ -89,7 +163,7 @@
       settings: {
         phone: "0216 517 28 05",
         email: "info@grosper.com.tr",
-        address: "Yakacık Caddesi No:130/2, İstanbul / Kartal",
+        address: "Çavuşoğlu Mh. Yakacık Cd. No:130, Kartal / İstanbul",
         theme: {
           primary: "#e30613",
           primaryDark: "#c10510",
@@ -159,6 +233,15 @@
     (data.gallery || []).forEach(function (item) {
       stripItemBinaries(item, "../images/fruits.jpg");
     });
+    (data.aboutSections || []).forEach(function (item) {
+      if (isDataUrl(item.image)) item.image = "";
+    });
+    (data.aboutDocs || []).forEach(function (item) {
+      if (isDataUrl(item.file)) {
+        item.file = "";
+        item.fileName = item.fileName && !isDataUrl(item.fileName) ? item.fileName : "";
+      }
+    });
     stripBrand(data);
     return data;
   }
@@ -220,9 +303,24 @@
       var parsed = JSON.parse(raw);
       var fresh = seed();
       Object.keys(fresh).forEach(function (key) {
-        if (key === "catalogFileVersion") return;
+        if (key === "catalogFileVersion" || key === "branchesVersion") return;
         if (parsed[key] == null) parsed[key] = fresh[key];
       });
+      var oldBranches = (parsed.branchesVersion || 0) < 1 || (parsed.branches || []).some(function (item) {
+        return item.name === "Kartal / Yakacık" || item.name === "Kadıköy / Caferağa";
+      });
+      if (oldBranches) {
+        parsed.branches = fresh.branches;
+        parsed.branchesVersion = 2;
+      } else if ((parsed.branchesVersion || 0) < 2) {
+        (parsed.branches || []).forEach(function (item) {
+          if (!item.hours) item.hours = "09:00-21:30";
+        });
+        parsed.branchesVersion = 2;
+      }
+      if ((parsed.settings || {}).address === "Yakacık Caddesi No:130/2, İstanbul / Kartal") {
+        parsed.settings.address = fresh.settings.address;
+      }
       var oldSlider = (parsed.sliders || []).some(function (item) {
         return item.title === "Tatil promosyonları" || (item.image || "").indexOf("eggs.jpg") !== -1;
       });
@@ -290,6 +388,27 @@
     saveAll(collection, list(collection).filter(function (row) {
       return row.id !== id;
     }));
+  }
+
+  function getAbout() {
+    var fresh = defaultAbout();
+    var current = (read().about || {});
+    return {
+      corporate: Object.assign({}, fresh.corporate, current.corporate || {}),
+      references: Object.assign({}, fresh.references, current.references || {}),
+      documents: Object.assign({}, fresh.documents, current.documents || {})
+    };
+  }
+
+  function saveAbout(about) {
+    var data = read();
+    var current = getAbout();
+    data.about = {
+      corporate: Object.assign({}, current.corporate, (about && about.corporate) || {}),
+      references: Object.assign({}, current.references, (about && about.references) || {}),
+      documents: Object.assign({}, current.documents, (about && about.documents) || {})
+    };
+    return write(data);
   }
 
   function getSettings() {
@@ -406,6 +525,8 @@
     saveTheme: saveTheme,
     getBrand: getBrand,
     saveBrand: saveBrand,
+    getAbout: getAbout,
+    saveAbout: saveAbout,
     getStats: getStats,
     bumpStat: bumpStat,
     reset: reset

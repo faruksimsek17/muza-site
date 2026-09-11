@@ -15,6 +15,10 @@
     jobs: ["İş Başvuruları", "Gelen başvurular"],
     subscribers: ["Bülten Kayıtları", "İndirim bülteni e-posta kayıtları"],
     catalogs: ["İndirim Bülteni", "PDF broşür ve katalog kapakları"],
+    about: ["Hakkımızda", "Kurumsal, referanslar ve belgeler sayfalarını buradan düzenleyin."],
+    "about-corporate": ["Kurumsal", "Hakkımızda sayfasındaki kurumsal metinleri düzenleyin."],
+    "about-references": ["Referanslar", "İş ortakları ve referans kartlarını düzenleyin."],
+    "about-documents": ["Belgelerimiz", "Kalite ve uygunluk belgelerini düzenleyin."],
     colors: ["Site renkleri", "Mağaza temasındaki ana renkleri buradan değiştirin. Değişiklik tüm sayfalara yansır."],
     brand: ["Marka ve site ayarları", "Header, footer, favicon ve paylaşım görsellerini buradan değiştirin."],
     settings: ["Ayarlar", "İletişim bilgileri"]
@@ -135,6 +139,15 @@
     document.querySelectorAll(".nav-link").forEach(function (btn) {
       btn.classList.toggle("is-active", btn.getAttribute("data-view") === name);
     });
+    document.querySelectorAll(".nav-group").forEach(function (group) {
+      var prefix = group.getAttribute("data-group") || "";
+      group.classList.toggle("is-open", name === prefix || name.indexOf(prefix + "-") === 0);
+    });
+    try {
+      if ((window.location.hash || "").replace("#", "") !== name) {
+        window.history.replaceState(null, "", "#" + name);
+      }
+    } catch (error) {}
     var meta = titles[name] || ["Panel", ""];
     var title = document.getElementById("page-title");
     var desc = document.getElementById("page-desc");
@@ -328,17 +341,19 @@
 
   function renderBranches() {
     if (editing === "new" || (editing && editing.id)) {
-      var item = editing === "new" ? { name: "", address: "", phone: "", hours: "" } : editing;
+      var item = editing === "new" ? { name: "", address: "", phone: "", hours: "09:00-21:30", mapUrl: "" } : editing;
       return panel("Şube düzenle", "", renderForm(
         field("Şube adı", "name", item.name) +
         field("Telefon", "phone", item.phone) +
         field("Adres", "address", item.address, "text", true) +
-        field("Çalışma saati", "hours", item.hours),
+        field("Çalışma saati", "hours", item.hours || "09:00-21:30") +
+        field("Haritada Gör linki", "mapUrl", item.mapUrl || "", "text", true) +
+        '<p class="upload-hint full">Google Haritalar’dan konum linkini kopyalayıp buraya yapıştırın. Sitedeki Haritada Gör bu adresi açar.</p>',
         item.id
       ));
     }
-    return panel("Şubeler", addButton(), table(["Şube", "Adres", "Telefon", "Saat", ""], rowsFrom(GrosperStore.list("branches"), function (item) {
-      return "<tr><td>" + escapeHtml(item.name) + "</td><td>" + escapeHtml(item.address) + "</td><td>" + escapeHtml(item.phone) + "</td><td>" + escapeHtml(item.hours) + "</td><td>" + actions(item.id) + "</td></tr>";
+    return panel("Şubeler", addButton(), table(["Şube", "Adres", "Telefon", "Harita", ""], rowsFrom(GrosperStore.list("branches"), function (item) {
+      return "<tr><td>" + escapeHtml(item.name) + "</td><td>" + escapeHtml(item.address) + "</td><td>" + escapeHtml(item.phone) + "</td><td>" + (item.mapUrl ? "Eklendi" : "—") + "</td><td>" + actions(item.id) + "</td></tr>";
     })));
   }
 
@@ -359,8 +374,17 @@
     })));
   }
 
+  function jobPhotoHtml(item, cls) {
+    if (!item || !item.photo) return "";
+    if (item.photo.indexOf("idb:") === 0) {
+      return '<img class="' + cls + '" alt="" data-idb="' + escapeHtml(item.photo.slice(4)) + '">';
+    }
+    return '<img class="' + cls + '" src="' + escapeHtml(item.photo) + '" alt="">';
+  }
+
   function renderJobs() {
     if (editing && editing.id) {
+      var photo = jobPhotoHtml(editing, "upload-preview");
       return panel("Başvuru", "", renderForm(
         field("Ad Soyad", "name", editing.name) +
         field("Pozisyon", "role", editing.role) +
@@ -370,12 +394,13 @@
         "<label>Durum<select name='status'>" +
           "<option value='yeni'" + (editing.status === "yeni" ? " selected" : "") + ">Yeni</option>" +
           "<option value='incelendi'" + (editing.status === "incelendi" ? " selected" : "") + ">İncelendi</option>" +
-        "</select></label>",
+        "</select></label>" +
+        (photo ? '<div class="full upload-field"><strong>Fotoğraf</strong>' + photo + "</div>" : ""),
         editing.id
       ));
     }
-    return panel("İş başvuruları", "", table(["Ad", "Pozisyon", "Tarih", "Durum", ""], rowsFrom(GrosperStore.list("jobs"), function (item) {
-      return "<tr><td>" + escapeHtml(item.name) + "</td><td>" + escapeHtml(item.role) + "</td><td>" + escapeHtml(item.date) + "</td><td>" + statusBadge(item.status) + "</td><td>" + actions(item.id) + "</td></tr>";
+    return panel("İş başvuruları", "", table(["Fotoğraf", "Ad", "Pozisyon", "Tarih", "Durum", ""], rowsFrom(GrosperStore.list("jobs"), function (item) {
+      return "<tr><td>" + (jobPhotoHtml(item, "thumb") || "—") + "</td><td>" + escapeHtml(item.name) + "</td><td>" + escapeHtml(item.role) + "</td><td>" + escapeHtml(item.date) + "</td><td>" + statusBadge(item.status) + "</td><td>" + actions(item.id) + "</td></tr>";
     })));
   }
 
@@ -846,6 +871,136 @@
     img.src = brand.headerLogo.indexOf("images/") === 0 ? "../" + brand.headerLogo : brand.headerLogo;
   }
 
+  function aboutPageKey(name) {
+    if (name === "about-corporate") return "corporate";
+    if (name === "about-references") return "references";
+    if (name === "about-documents") return "documents";
+    return "";
+  }
+
+  function renderAboutHub() {
+    return (
+      '<div class="about-pick">' +
+        '<button type="button" class="about-pick__card" data-view="about-corporate">' +
+          "<h3>Kurumsal</h3>" +
+          "<p>Hikaye, misyon ve vizyon metinlerini düzenleyin.</p>" +
+        "</button>" +
+        '<button type="button" class="about-pick__card" data-view="about-references">' +
+          "<h3>Referanslar</h3>" +
+          "<p>İş ortakları ve marka kartlarını ekleyin veya düzenleyin.</p>" +
+        "</button>" +
+        '<button type="button" class="about-pick__card" data-view="about-documents">' +
+          "<h3>Belgelerimiz</h3>" +
+          "<p>Kalite belgelerini ve dosyalarını yönetin.</p>" +
+        "</button>" +
+      "</div>"
+    );
+  }
+
+  function renderAboutMeta(pageKey) {
+    var page = GrosperStore.getAbout()[pageKey] || { title: "", lead: "" };
+    return panel("Sayfa başlığı", "", (
+      '<form class="editor" data-about-meta="' + pageKey + '">' +
+        '<div class="form-grid">' +
+          field("Başlık", "title", page.title || "") +
+          field("Üst açıklama", "lead", page.lead || "", "textarea", true) +
+        "</div>" +
+        '<div class="form-actions">' +
+          '<button class="btn btn-primary" type="submit">Başlığı kaydet</button>' +
+        "</div>" +
+      "</form>"
+    ));
+  }
+
+  function renderAboutCorporate() {
+    if (editing === "new" || (editing && editing.id)) {
+      var item = editing === "new" ? { title: "", body: "", image: "" } : editing;
+      var image = lightRef(item.image);
+      var imagePreview = "";
+      if (item.image && item.image.indexOf("idb:") === 0) {
+        imagePreview = '<img class="upload-preview" alt="" data-idb="' + escapeHtml(item.image.slice(4)) + '">';
+      } else if (image) {
+        imagePreview = '<img class="upload-preview" src="' + escapeHtml(image) + '" alt="">';
+      }
+      return panel("Bölüm düzenle", "", (
+        '<form class="editor" data-id="' + escapeHtml(item.id || "") + '" data-about-item="corporate">' +
+          '<div class="form-grid">' +
+            field("Bölüm başlığı", "title", item.title) +
+            field("Metin", "body", item.body || "", "textarea", true) +
+            '<div class="full upload-field">' +
+              "<strong>Bölüm görseli</strong>" +
+              '<p class="upload-hint">Kurumsal sayfada bu bölümün üstünde görünür. En fazla 5 MB.</p>' +
+              imagePreview +
+              '<div class="file-row">' +
+                '<label class="file-btn">Dosya Seç<input type="file" accept="image/*" data-file="image" hidden></label>' +
+                '<span class="file-name" data-filename="image">' + escapeHtml(image || item.image ? (fileName(image) === "Dosya seçilmedi" ? "Görsel seçildi" : fileName(image)) : "Dosya seçilmedi") + "</span>" +
+              "</div>" +
+              '<input type="hidden" name="image" value="' + escapeHtml(image) + '">' +
+            "</div>" +
+          "</div>" +
+          '<div class="form-actions">' +
+            '<button class="btn btn-ghost" type="button" data-cancel>Vazgeç</button>' +
+            '<button class="btn btn-primary" type="submit">Kaydet</button>' +
+          "</div>" +
+        "</form>"
+      ));
+    }
+    return renderAboutMeta("corporate") + panel("Kurumsal bölümler", addButton(), table(["Görsel", "Başlık", ""], rowsFrom(GrosperStore.list("aboutSections"), function (item) {
+      var thumb = lightRef(item.image);
+      var thumbTag = item.image && item.image.indexOf("idb:") === 0
+        ? "<img class='thumb' alt='' data-idb='" + escapeHtml(item.image.slice(4)) + "'>"
+        : (thumb ? "<img class='thumb' src='" + escapeHtml(thumb) + "' alt=''>" : "—");
+      return "<tr><td>" + thumbTag + "</td><td>" + escapeHtml(item.title) + "</td><td>" + actions(item.id) + "</td></tr>";
+    })));
+  }
+
+  function renderAboutReferences() {
+    if (editing === "new" || (editing && editing.id)) {
+      var item = editing === "new" ? { title: "", text: "" } : editing;
+      return panel("Referans düzenle", "", renderForm(
+        field("Marka / firma", "title", item.title) +
+        field("Açıklama", "text", item.text || "", "textarea", true),
+        item.id
+      ));
+    }
+    return renderAboutMeta("references") + panel("Referanslar", addButton(), table(["Marka", "Açıklama", ""], rowsFrom(GrosperStore.list("aboutRefs"), function (item) {
+      return "<tr><td>" + escapeHtml(item.title) + "</td><td>" + escapeHtml(item.text || "") + "</td><td>" + actions(item.id) + "</td></tr>";
+    })));
+  }
+
+  function renderAboutDocuments() {
+    if (editing === "new" || (editing && editing.id)) {
+      var item = editing === "new" ? { title: "", text: "", file: "", fileName: "" } : editing;
+      var file = item.file || "";
+      var fileLabel = item.fileName || fileName(file, "Dosya seçildi");
+      return panel("Belge düzenle", "", (
+        '<form class="editor" data-id="' + escapeHtml(item.id || "") + '" data-about-item="documents">' +
+          '<div class="form-grid">' +
+            field("Belge adı", "title", item.title) +
+            field("Açıklama", "text", item.text || "", "textarea", true) +
+            '<div class="full upload-field">' +
+              "<strong>Belge dosyası</strong>" +
+              '<p class="upload-hint">PDF veya görsel yükleyin. Sitedeki “Belgeyi İncele” bu dosyayı açar. En fazla 20 MB.</p>' +
+              '<div class="file-row">' +
+                '<label class="file-btn">Dosya Seç<input type="file" accept="application/pdf,.pdf,image/*" data-file="file" hidden></label>' +
+                '<span class="file-name" data-filename="file">' + escapeHtml(file || item.fileName ? fileLabel : "Dosya seçilmedi") + "</span>" +
+              "</div>" +
+              '<input type="hidden" name="file" value="' + escapeHtml(file) + '">' +
+              '<input type="hidden" name="fileName" value="' + escapeHtml(item.fileName || "") + '">' +
+            "</div>" +
+          "</div>" +
+          '<div class="form-actions">' +
+            '<button class="btn btn-ghost" type="button" data-cancel>Vazgeç</button>' +
+            '<button class="btn btn-primary" type="submit">Kaydet</button>' +
+          "</div>" +
+        "</form>"
+      ));
+    }
+    return renderAboutMeta("documents") + panel("Belgeler", addButton(), table(["Belge", "Dosya", ""], rowsFrom(GrosperStore.list("aboutDocs"), function (item) {
+      return "<tr><td>" + escapeHtml(item.title) + "</td><td>" + escapeHtml(item.fileName || (item.file ? "Dosya yüklü" : "Dosya yok")) + "</td><td>" + actions(item.id) + "</td></tr>";
+    })));
+  }
+
   function renderSettings() {
     var s = GrosperStore.getSettings();
     return panel("İletişim ayarları", "", renderForm(
@@ -890,6 +1045,18 @@
         break;
       case "catalogs":
         html = renderCatalogs();
+        break;
+      case "about":
+        html = renderAboutHub();
+        break;
+      case "about-corporate":
+        html = renderAboutCorporate();
+        break;
+      case "about-references":
+        html = renderAboutReferences();
+        break;
+      case "about-documents":
+        html = renderAboutDocuments();
         break;
       case "colors":
         html = renderColors();
@@ -949,7 +1116,9 @@
         if (!file) return;
         var name = input.getAttribute("data-file");
         var isPdf = name === "pdf" || file.type === "application/pdf";
-        var storeFile = isPdf || (catalogForm && name === "image") || brandForm;
+        var aboutDocForm = !!root.querySelector('[data-about-item="documents"]');
+        var aboutSectionForm = !!root.querySelector('[data-about-item="corporate"]');
+        var storeFile = isPdf || (catalogForm && name === "image") || brandForm || (aboutDocForm && name === "file") || (aboutSectionForm && name === "image");
         if (storeFile) {
           if (isPdf && file.size > MAX_PDF_BYTES) {
             toast("PDF 20 MB’den büyük olamaz");
@@ -957,6 +1126,16 @@
             return;
           }
           if (brandForm && file.size > MAX_BRAND_BYTES) {
+            toast("Görsel 5 MB’den büyük olamaz");
+            input.value = "";
+            return;
+          }
+          if (aboutDocForm && file.size > MAX_PDF_BYTES) {
+            toast("Dosya 20 MB’den büyük olamaz");
+            input.value = "";
+            return;
+          }
+          if (aboutSectionForm && file.size > MAX_BRAND_BYTES) {
             toast("Görsel 5 MB’den büyük olamaz");
             input.value = "";
             return;
@@ -976,6 +1155,17 @@
             var pdfName = root.querySelector('input[name="pdfName"]');
             if (pdfName) pdfName.value = file.name;
             return;
+          }
+          if (aboutDocForm && name === "file") {
+            var aboutFormEl = input.closest("form");
+            if (aboutFormEl) aboutFormEl._aboutFile = file;
+            var fileNameField = root.querySelector('input[name="fileName"]');
+            if (fileNameField) fileNameField.value = file.name;
+            return;
+          }
+          if (aboutSectionForm && name === "image") {
+            var sectionFormEl = input.closest("form");
+            if (sectionFormEl) sectionFormEl._aboutImage = file;
           }
           var box = input.closest(".brand-field") || input.closest(".upload-field");
           if (box) {
@@ -1030,6 +1220,9 @@
       case "reviews":
       case "jobs":
       case "catalogs":
+      case "aboutSections":
+      case "aboutRefs":
+      case "aboutDocs":
       case "subscribers":
       case "users":
       case "orders":
@@ -1038,6 +1231,9 @@
       case "menu":
         return name;
       default:
+        if (name === "about-corporate") return "aboutSections";
+        if (name === "about-references") return "aboutRefs";
+        if (name === "about-documents") return "aboutDocs";
         return "";
     }
   }
@@ -1110,6 +1306,77 @@
     });
   }
 
+  function saveAboutSection(form, current) {
+    var item = formToItem(form, current);
+    if (item.image === "pending" || (item.image && item.image.indexOf("data:") === 0)) {
+      item.image = current && current.image && current.image.indexOf("data:") !== 0 ? current.image : "";
+    }
+    if (!item.id) item.id = GrosperStore.uid();
+    var imageInput = form.querySelector('[data-file="image"]');
+    var imageFile = form._aboutImage || (imageInput && imageInput.files && imageInput.files[0]);
+
+    function finish() {
+      GrosperStore.upsert("aboutSections", item);
+      toast("Kayıt kaydedildi");
+      editing = null;
+      render();
+    }
+
+    if (imageFile && imageFile.size > MAX_BRAND_BYTES) {
+      toast("Görsel 5 MB’den büyük olamaz");
+      return;
+    }
+
+    if (imageFile && window.GrosperFiles) {
+      var imageKey = "about-section-" + item.id;
+      GrosperFiles.put(imageKey, imageFile).then(function () {
+        item.image = "idb:" + imageKey;
+        finish();
+      }).catch(function () {
+        toast("Dosya kaydedilemedi. Sayfayı yenileyip tekrar deneyin.");
+      });
+      return;
+    }
+
+    finish();
+  }
+
+  function saveAboutDoc(form, current) {
+    var item = formToItem(form, current);
+    if (item.file === "pending" || (item.file && item.file.indexOf("data:") === 0)) {
+      item.file = current && current.file && current.file.indexOf("data:") !== 0 ? current.file : "";
+    }
+    if (!item.id) item.id = GrosperStore.uid();
+    var fileInput = form.querySelector('[data-file="file"]');
+    var file = (form._aboutFile) || (fileInput && fileInput.files && fileInput.files[0]);
+
+    function finish() {
+      GrosperStore.upsert("aboutDocs", item);
+      toast("Kayıt kaydedildi");
+      editing = null;
+      render();
+    }
+
+    if (file && file.size > MAX_PDF_BYTES) {
+      toast("Dosya 20 MB’den büyük olamaz");
+      return;
+    }
+
+    if (file && window.GrosperFiles) {
+      var fileKey = "about-doc-" + item.id;
+      GrosperFiles.put(fileKey, file).then(function () {
+        item.file = "idb:" + fileKey;
+        item.fileName = file.name;
+        finish();
+      }).catch(function () {
+        toast("Dosya kaydedilemedi. Sayfayı yenileyip tekrar deneyin.");
+      });
+      return;
+    }
+
+    finish();
+  }
+
   function bindPanel() {
     if (!isAuthed()) {
       window.location.href = "index.html";
@@ -1160,9 +1427,20 @@
       }
       if (del && col) {
         var deleted = findItem(col, del.getAttribute("data-del"));
-        if (col === "catalogs" && deleted && window.GrosperFiles) {
-          if (deleted.pdf && deleted.pdf.indexOf("idb:") === 0) GrosperFiles.remove(deleted.pdf.slice(4));
-          if (deleted.image && deleted.image.indexOf("idb:") === 0) GrosperFiles.remove(deleted.image.slice(4));
+        if (deleted && window.GrosperFiles) {
+          if (col === "catalogs") {
+            if (deleted.pdf && deleted.pdf.indexOf("idb:") === 0) GrosperFiles.remove(deleted.pdf.slice(4));
+            if (deleted.image && deleted.image.indexOf("idb:") === 0) GrosperFiles.remove(deleted.image.slice(4));
+          }
+          if (col === "jobs" && deleted.photo && deleted.photo.indexOf("idb:") === 0) {
+            GrosperFiles.remove(deleted.photo.slice(4));
+          }
+          if (col === "aboutDocs" && deleted.file && deleted.file.indexOf("idb:") === 0) {
+            GrosperFiles.remove(deleted.file.slice(4));
+          }
+          if (col === "aboutSections" && deleted.image && deleted.image.indexOf("idb:") === 0) {
+            GrosperFiles.remove(deleted.image.slice(4));
+          }
         }
         GrosperStore.remove(col, del.getAttribute("data-del"));
         toast("Kayıt silindi");
@@ -1199,6 +1477,28 @@
       var form = event.target.closest(".editor");
       if (!form) return;
       event.preventDefault();
+      if (form.getAttribute("data-about-meta")) {
+        var pageKey = form.getAttribute("data-about-meta");
+        var payload = {};
+        payload[pageKey] = {
+          title: (form.elements.title && form.elements.title.value) || "",
+          lead: (form.elements.lead && form.elements.lead.value) || ""
+        };
+        GrosperStore.saveAbout(payload);
+        toast("Sayfa başlığı kaydedildi");
+        render();
+        return;
+      }
+      if (view === "about-corporate" && form.getAttribute("data-about-item") === "corporate") {
+        var currentSection = form.getAttribute("data-id") ? findItem("aboutSections", form.getAttribute("data-id")) : null;
+        saveAboutSection(form, currentSection);
+        return;
+      }
+      if (view === "about-documents") {
+        var currentDoc = form.getAttribute("data-id") ? findItem("aboutDocs", form.getAttribute("data-id")) : null;
+        saveAboutDoc(form, currentDoc);
+        return;
+      }
       if (view === "settings") {
         GrosperStore.saveSettings(formToItem(form, GrosperStore.getSettings()));
         toast("Ayarlar kaydedildi");
@@ -1239,6 +1539,11 @@
       toast("Kayıt kaydedildi");
       editing = null;
       render();
+    });
+
+    window.addEventListener("hashchange", function () {
+      var name = (window.location.hash || "").replace("#", "");
+      if (titles[name] && name !== view) setView(name);
     });
 
     var initial = (window.location.hash || "").replace("#", "");
