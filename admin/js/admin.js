@@ -5,7 +5,7 @@
 
   var titles = {
     dashboard: ["Özet", "Sitenin güncel içerik özeti"],
-    sliders: ["Slider", "Ana sayfa yana kayan bannerlar"],
+    sliders: ["Slider", "Masaüstü ve mobil slayt görsellerini buradan yönetin."],
     banners: ["Blok Banner", "Ana sayfadaki 3 kampanya görseli"],
     news: ["Haberler", "Blog ve kampanya haberleri"],
     gallery: ["Öne Çıkan Kategoriler", "Ana sayfadaki öne çıkan kategori görselleri"],
@@ -199,27 +199,60 @@
     return '<button class="btn btn-primary" type="button" data-add>Yeni Ekle</button>';
   }
 
+  function sliderImagePreview(src, emptyText) {
+    if (src && src.indexOf("idb:") === 0) {
+      return '<img class="upload-preview" alt="" data-idb="' + escapeHtml(src.slice(4)) + '">';
+    }
+    if (src) {
+      var path = src;
+      if (src.indexOf("images/") === 0) path = "../" + src;
+      return '<img class="upload-preview" src="' + escapeHtml(path) + '" alt="">';
+    }
+    return '<img class="upload-preview upload-preview--slot" alt="" data-empty="' + escapeHtml(emptyText || "Görsel yükleyin") + '">';
+  }
+
+  function sliderThumb(src) {
+    if (!src) return "—";
+    if (src.indexOf("idb:") === 0) {
+      return "<img class='thumb' alt='' data-idb='" + escapeHtml(src.slice(4)) + "'>";
+    }
+    return "<img class='thumb' src='" + escapeHtml(src) + "' alt=''>";
+  }
+
   function renderSliders() {
     if (editing === "new" || (editing && editing.id)) {
-      var item = editing === "new" ? { title: "", text: "", image: "", link: "#kategoriler", status: "yayinda" } : editing;
+      var item = editing === "new" ? { title: "", text: "", image: "", mobileImage: "", link: "#kategoriler", status: "yayinda" } : editing;
       var image = item.image || "";
+      var mobileImage = item.mobileImage || "";
       return panel("Slider düzenle", "", (
-        '<form class="editor" data-id="' + escapeHtml(item.id || "") + '">' +
+        '<form class="editor" data-id="' + escapeHtml(item.id || "") + '" data-slider-form novalidate>' +
           '<div class="form-grid">' +
+            '<div class="full slider-upload-grid">' +
+              '<div class="upload-field">' +
+                "<strong>Masaüstü görseli</strong>" +
+                '<p class="upload-hint">Geniş slayt. Bilgisayar ekranında görünür. En fazla 5 MB.</p>' +
+                sliderImagePreview(image, "Masaüstü görseli yükleyin") +
+                '<div class="file-row">' +
+                  '<label class="file-btn">Dosya Seç<input type="file" accept="image/*" data-file="image" hidden></label>' +
+                  '<span class="file-name" data-filename="image">' + escapeHtml(fileName(image, "Görsel seçildi")) + "</span>" +
+                "</div>" +
+                '<input type="hidden" name="image" value="' + escapeHtml(image) + '">' +
+              "</div>" +
+              '<div class="upload-field upload-field--mobile">' +
+                "<strong>Mobil görseli</strong>" +
+                '<p class="upload-hint">Bu slaytın telefon görseli. Kare / dikey çalışma yükleyin. En fazla 5 MB.</p>' +
+                sliderImagePreview(mobileImage, "Mobil görseli buraya yükleyin") +
+                '<div class="file-row">' +
+                  '<label class="file-btn">Dosya Seç<input type="file" accept="image/*" data-file="mobileImage" hidden></label>' +
+                  '<span class="file-name" data-filename="mobileImage">' + escapeHtml(fileName(mobileImage, "Mobil görsel seçildi")) + "</span>" +
+                "</div>" +
+                '<input type="hidden" name="mobileImage" value="' + escapeHtml(mobileImage) + '">' +
+              "</div>" +
+            "</div>" +
             field("Başlık", "title", item.title) +
             field("Durum", "status", item.status || "yayinda", "select") +
             field("Tıklanınca gidilecek link", "link", item.link || "#kategoriler", "text", true) +
             field("Kısa açıklama", "text", item.text || "", "text", true) +
-            '<div class="full upload-field">' +
-              "<strong>Slider görseli</strong>" +
-              '<p class="upload-hint">Dosya seçerek slayt görselini değiştirin. Kayıt sonrası ana sayfada görünür.</p>' +
-              (image ? '<img class="upload-preview" src="' + escapeHtml(image) + '" alt="">' : "") +
-              '<div class="file-row">' +
-                '<label class="file-btn">Dosya Seç<input type="file" accept="image/*" data-file="image" hidden></label>' +
-                '<span class="file-name" data-filename="image">' + escapeHtml(fileName(image)) + "</span>" +
-              "</div>" +
-              '<input type="hidden" name="image" value="' + escapeHtml(image) + '">' +
-            "</div>" +
           "</div>" +
           '<div class="form-actions">' +
             '<button class="btn btn-ghost" type="button" data-cancel>Vazgeç</button>' +
@@ -228,8 +261,8 @@
         "</form>"
       ));
     }
-    return panel("Slider listesi", addButton(), table(["Görsel", "Başlık", "Link", "Durum", ""], rowsFrom(GrosperStore.list("sliders"), function (item) {
-      return "<tr><td><img class='thumb' src='" + escapeHtml(item.image) + "' alt=''></td><td>" + escapeHtml(item.title) + "</td><td>" + escapeHtml(item.link || "") + "</td><td>" + statusBadge(item.status) + "</td><td>" + actions(item.id) + "</td></tr>";
+    return panel("Slider listesi", addButton(), table(["Masaüstü", "Mobil", "Başlık", "Durum", ""], rowsFrom(GrosperStore.list("sliders"), function (item) {
+      return "<tr><td>" + sliderThumb(item.image) + "</td><td>" + sliderThumb(item.mobileImage) + "</td><td>" + escapeHtml(item.title) + "</td><td>" + statusBadge(item.status) + "</td><td>" + actions(item.id) + "</td></tr>";
     })));
   }
 
@@ -1128,6 +1161,7 @@
   function bindUploads(root) {
     var catalogForm = !!root.querySelector('[data-file="pdf"]');
     var brandForm = !!root.querySelector("[data-brand-form]");
+    var sliderForm = !!root.querySelector("[data-slider-form]");
     root.querySelectorAll("[data-file]").forEach(function (input) {
       input.addEventListener("change", function () {
         var file = input.files && input.files[0];
@@ -1136,7 +1170,7 @@
         var isPdf = name === "pdf" || file.type === "application/pdf";
         var aboutDocForm = !!root.querySelector('[data-about-item="documents"]');
         var aboutSectionForm = !!root.querySelector('[data-about-item="corporate"]');
-        var storeFile = isPdf || (catalogForm && name === "image") || brandForm || (aboutDocForm && name === "file") || (aboutSectionForm && name === "image");
+        var storeFile = isPdf || (catalogForm && name === "image") || brandForm || sliderForm || (aboutDocForm && name === "file") || (aboutSectionForm && name === "image");
         if (storeFile) {
           if (isPdf && file.size > MAX_PDF_BYTES) {
             toast("PDF 20 MB’den büyük olamaz");
@@ -1154,6 +1188,11 @@
             return;
           }
           if (aboutSectionForm && file.size > MAX_BRAND_BYTES) {
+            toast("Görsel 5 MB’den büyük olamaz");
+            input.value = "";
+            return;
+          }
+          if (sliderForm && file.size > MAX_BRAND_BYTES) {
             toast("Görsel 5 MB’den büyük olamaz");
             input.value = "";
             return;
@@ -1185,6 +1224,13 @@
             var sectionFormEl = input.closest("form");
             if (sectionFormEl) sectionFormEl._aboutImage = file;
           }
+          if (sliderForm) {
+            var sliderFormEl = input.closest("form");
+            if (sliderFormEl) {
+              sliderFormEl._sliderFiles = sliderFormEl._sliderFiles || {};
+              sliderFormEl._sliderFiles[name] = file;
+            }
+          }
           var box = input.closest(".brand-field") || input.closest(".upload-field");
           if (box) {
             var wrap = box.querySelector(".brand-preview");
@@ -1200,7 +1246,11 @@
               preview.alt = "";
               box.insertBefore(preview, box.querySelector(".file-row"));
             }
-            if (preview) preview.src = URL.createObjectURL(file);
+            if (preview) {
+              preview.src = URL.createObjectURL(file);
+              preview.classList.remove("upload-preview--slot");
+              preview.removeAttribute("data-empty");
+            }
           }
           return;
         }
@@ -1273,6 +1323,59 @@
       item[el.name] = el.type === "number" ? Number(el.value) : el.value;
     });
     return item;
+  }
+
+  function saveSlider(form, current) {
+    var item = formToItem(form, current);
+    if (item.image === "pending" || (item.image && item.image.indexOf("data:") === 0)) {
+      item.image = current && current.image && current.image.indexOf("data:") !== 0 ? current.image : "../images/slider-kartlar.jpg";
+    }
+    if (item.mobileImage === "pending" || (item.mobileImage && item.mobileImage.indexOf("data:") === 0)) {
+      item.mobileImage = current && current.mobileImage && current.mobileImage.indexOf("data:") !== 0 ? current.mobileImage : "";
+    }
+    if (!item.id) item.id = GrosperStore.uid();
+    var files = form._sliderFiles || {};
+    var imageInput = form.querySelector('[data-file="image"]');
+    var mobileInput = form.querySelector('[data-file="mobileImage"]');
+    var imageFile = files.image || (imageInput && imageInput.files && imageInput.files[0]);
+    var mobileFile = files.mobileImage || (mobileInput && mobileInput.files && mobileInput.files[0]);
+
+    function finish() {
+      GrosperStore.upsert("sliders", item);
+      toast("Kayıt kaydedildi");
+      editing = null;
+      render();
+    }
+
+    if (imageFile && imageFile.size > MAX_BRAND_BYTES) {
+      toast("Görsel 5 MB’den büyük olamaz");
+      return;
+    }
+    if (mobileFile && mobileFile.size > MAX_BRAND_BYTES) {
+      toast("Görsel 5 MB’den büyük olamaz");
+      return;
+    }
+    if ((imageFile || mobileFile) && !window.GrosperFiles) {
+      toast("Dosya kaydedilemedi. Sayfayı yenileyip tekrar deneyin.");
+      return;
+    }
+
+    var tasks = [];
+    if (imageFile) {
+      var imageKey = "slider-" + item.id;
+      tasks.push(GrosperFiles.put(imageKey, imageFile).then(function () {
+        item.image = "idb:" + imageKey;
+      }));
+    }
+    if (mobileFile) {
+      var mobileKey = "slider-mobile-" + item.id;
+      tasks.push(GrosperFiles.put(mobileKey, mobileFile).then(function () {
+        item.mobileImage = "idb:" + mobileKey;
+      }));
+    }
+    Promise.all(tasks).then(finish).catch(function () {
+      toast("Dosya kaydedilemedi. Sayfayı yenileyip tekrar deneyin.");
+    });
   }
 
   function saveCatalog(form, current) {
@@ -1459,6 +1562,10 @@
           if (col === "aboutSections" && deleted.image && deleted.image.indexOf("idb:") === 0) {
             GrosperFiles.remove(deleted.image.slice(4));
           }
+          if (col === "sliders") {
+            if (deleted.image && deleted.image.indexOf("idb:") === 0) GrosperFiles.remove(deleted.image.slice(4));
+            if (deleted.mobileImage && deleted.mobileImage.indexOf("idb:") === 0) GrosperFiles.remove(deleted.mobileImage.slice(4));
+          }
         }
         GrosperStore.remove(col, del.getAttribute("data-del"));
         toast("Kayıt silindi");
@@ -1543,6 +1650,10 @@
       var isNew = !current;
       if (view === "catalogs") {
         saveCatalog(form, current);
+        return;
+      }
+      if (view === "sliders") {
+        saveSlider(form, current);
         return;
       }
       try {

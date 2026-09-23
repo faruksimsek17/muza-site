@@ -439,6 +439,50 @@ th {
   background: #f3f3f3;
 }
 
+.slider-upload-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.upload-field--mobile {
+  background: #fff8f0;
+  border: 1px dashed #f0c48a;
+  border-radius: 16px;
+  padding: 14px;
+}
+
+.upload-preview--slot {
+  min-height: 220px;
+  max-height: none;
+  aspect-ratio: 1 / 1;
+  border: 1px dashed #d8d8d8;
+  background:
+    linear-gradient(180deg, #f7f7f7 0%, #eeeeee 100%);
+  position: relative;
+}
+
+.upload-preview--slot::after {
+  content: attr(data-empty);
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 16px;
+  color: #8a8a8a;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.slider-ratio-preview {
+  width: min(180px, 50%);
+  background: linear-gradient(180deg, #ececec 0%, #d8d8d8 100%);
+  border-radius: 12px;
+  border: 1px dashed #cfcfcf;
+}
+
 .file-row {
   display: flex;
   align-items: center;
@@ -878,7 +922,8 @@ th {
   .color-grid,
   .color-grid--2,
   .brand-grid,
-  .about-pick {
+  .about-pick,
+  .slider-upload-grid {
     grid-template-columns: 1fr;
   }
 }

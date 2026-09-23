@@ -48,6 +48,13 @@
     });
   }
 
+  function defaultSliderSettings() {
+    return {
+      mobileAspectRatio: "1/1",
+      mobileBreakpoint: 640
+    };
+  }
+
   function defaultAbout() {
     return {
       corporate: {
@@ -67,10 +74,11 @@
 
   function seed() {
     return {
+      sliderSettings: defaultSliderSettings(),
       sliders: [
-        { id: uid(), title: "Yemek kartları", text: "Tüm alışverişlerinizde geçerli 0 komisyonlu yemek kartları.", image: "../images/slider-kartlar.jpg", link: "#kategoriler", status: "yayinda" },
-        { id: uid(), title: "İndirim bülteni", text: "2–14 Eylül indirim bültenimiz yayında.", image: "../images/slider-bulten.jpg", link: "../sayfalar/bulten.html", status: "yayinda" },
-        { id: uid(), title: "Taşdelen şube açılışı", text: "2–28 Eylül şube açılış indirimleri.", image: "../images/slider-sube.jpg", link: "../sayfalar/subeler.html", status: "yayinda" }
+        { id: uid(), title: "Yemek kartları", text: "Tüm alışverişlerinizde geçerli 0 komisyonlu yemek kartları.", image: "../images/slider-kartlar.jpg", mobileImage: "", link: "#kategoriler", status: "yayinda" },
+        { id: uid(), title: "İndirim bülteni", text: "2–14 Eylül indirim bültenimiz yayında.", image: "../images/slider-bulten.jpg", mobileImage: "", link: "../sayfalar/bulten.html", status: "yayinda" },
+        { id: uid(), title: "Taşdelen şube açılışı", text: "2–28 Eylül şube açılış indirimleri.", image: "../images/slider-sube.jpg", mobileImage: "", link: "../sayfalar/subeler.html", status: "yayinda" }
       ],
       banners: [
         { id: uid(), title: "Züccaciye fırsatları", image: "../images/banner-zuccaciye.webp", link: "../#kategoriler", status: "yayinda" },
@@ -223,6 +231,7 @@
     stripCatalogs(data);
     (data.sliders || []).forEach(function (item) {
       stripItemBinaries(item, "../images/slider-kartlar.jpg");
+      if (isDataUrl(item.mobileImage)) item.mobileImage = "";
     });
     (data.banners || []).forEach(function (item) {
       stripItemBinaries(item, "../images/banner-zuccaciye.webp");
@@ -305,6 +314,10 @@
       Object.keys(fresh).forEach(function (key) {
         if (key === "catalogFileVersion" || key === "branchesVersion") return;
         if (parsed[key] == null) parsed[key] = fresh[key];
+      });
+      if (!parsed.sliderSettings) parsed.sliderSettings = fresh.sliderSettings;
+      (parsed.sliders || []).forEach(function (item) {
+        if (item.mobileImage == null) item.mobileImage = "";
       });
       var oldBranches = (parsed.branchesVersion || 0) < 1 || (parsed.branches || []).some(function (item) {
         return item.name === "Kartal / Yakacık" || item.name === "Kadıköy / Caferağa";
@@ -408,6 +421,23 @@
       references: Object.assign({}, current.references, (about && about.references) || {}),
       documents: Object.assign({}, current.documents, (about && about.documents) || {})
     };
+    return write(data);
+  }
+
+  function getSliderSettings() {
+    var next = Object.assign({}, defaultSliderSettings(), read().sliderSettings || {});
+    next.mobileBreakpoint = 640;
+    next.mobileAspectRatio = next.mobileAspectRatio || "1/1";
+    return next;
+  }
+
+  function saveSliderSettings(settings) {
+    var data = read();
+    var current = getSliderSettings();
+    var next = Object.assign({}, current, settings || {});
+    next.mobileBreakpoint = Math.max(320, Math.min(1200, Number(next.mobileBreakpoint) || current.mobileBreakpoint));
+    if (!next.mobileAspectRatio) next.mobileAspectRatio = current.mobileAspectRatio;
+    data.sliderSettings = next;
     return write(data);
   }
 
@@ -527,6 +557,8 @@
     saveBrand: saveBrand,
     getAbout: getAbout,
     saveAbout: saveAbout,
+    getSliderSettings: getSliderSettings,
+    saveSliderSettings: saveSliderSettings,
     getStats: getStats,
     bumpStat: bumpStat,
     reset: reset
