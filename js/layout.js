@@ -54,7 +54,7 @@
       '<header class="header">' +
         '<div class="container header__inner">' +
           '<a class="logo" href="' + home + '" aria-label="Grosper anasayfa">' +
-            '<img class="logo__img" src="' + root + 'images/logo.png" alt="Grosper — Alışverişe değer!" width="220" height="80" data-brand="header">' +
+            '<img class="logo__img" src="' + root + 'images/logo.png?v=2" alt="Grosper — Alışverişe değer!" width="220" height="80" data-brand="header">' +
           "</a>" +
           '<a class="header-cta" href="' + p + 'bulten.html">İndirim Bülteni</a>' +
           '<input type="checkbox" id="nav-toggle" class="nav-toggle" hidden>' +

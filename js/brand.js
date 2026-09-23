@@ -117,7 +117,7 @@
 
     var header = document.querySelector("[data-brand='header']") || document.querySelector(".logo__img");
     var footer = document.querySelector("[data-brand='footer']") || document.querySelector(".footer__logo");
-    var fallbackHeader = publicPath("images/logo.png", root);
+    var fallbackHeader = publicPath("images/logo.png?v=2", root);
 
     resolveSrc(brand.headerLogo || "images/logo.png", root, function (src) {
       var next = src || fallbackHeader;
