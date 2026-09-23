@@ -663,6 +663,15 @@ body.nav-open .drawer {
   inset: 0;
 }
 
+.cat-banner--contain {
+  background: #f3f3f3;
+}
+
+.cat-banner--contain img {
+  object-fit: contain;
+  object-position: center;
+}
+
 .cat-banner::after {
   content: "";
   position: absolute;

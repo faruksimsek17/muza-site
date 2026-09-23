@@ -350,19 +350,20 @@
       var item = editing === "new" ? { title: "", image: "" } : editing;
       var image = item.image || "";
       return panel("Kategori düzenle", "", (
-        '<form class="editor" data-id="' + escapeHtml(item.id || "") + '">' +
+        '<form class="editor" data-id="' + escapeHtml(item.id || "") + '" data-gallery-form novalidate>' +
           '<div class="form-grid">' +
             field("Başlık", "title", item.title, "text", true) +
             '<div class="full upload-field">' +
               "<strong>Kategori görseli</strong>" +
-              '<p class="upload-hint">Dosya seçerek görseli ekleyin veya değiştirin. Kayıt sonrası sitede görünür.</p>' +
-              (image ? '<img class="upload-preview" src="' + escapeHtml(image) + '" alt="">' : "") +
+              '<p class="upload-hint">Dosya seçerek görseli değiştirin. Kayıt sonrası ana sayfada (öne çıkan kategoriler) görünür. En fazla 5 MB.</p>' +
+              sliderImagePreview(image, "Kategori görseli yükleyin") +
               '<div class="file-row">' +
                 '<label class="file-btn">Dosya Seç<input type="file" accept="image/*" data-file="image" hidden></label>' +
-                '<span class="file-name" data-filename="image">' + escapeHtml(fileName(image)) + "</span>" +
+                '<span class="file-name" data-filename="image">' + escapeHtml(fileName(image, "Görsel seçildi")) + "</span>" +
               "</div>" +
               '<input type="hidden" name="image" value="' + escapeHtml(image) + '">' +
             "</div>" +
+            '<label class="full check-row"><input type="checkbox" name="fitContain"' + (item.fitContain ? " checked" : "") + "> Görseli kırpma, kutuya tam sığdır</label>" +
           "</div>" +
           '<div class="form-actions">' +
             '<button class="btn btn-ghost" type="button" data-cancel>Vazgeç</button>' +
@@ -372,7 +373,7 @@
       ));
     }
     return panel("Öne çıkan kategoriler", addButton(), table(["Görsel", "Başlık", ""], rowsFrom(GrosperStore.list("gallery"), function (item) {
-      return "<tr><td><img class='thumb' src='" + escapeHtml(item.image) + "' alt=''></td><td>" + escapeHtml(item.title) + "</td><td>" + actions(item.id) + "</td></tr>";
+      return "<tr><td>" + sliderThumb(item.image) + "</td><td>" + escapeHtml(item.title) + "</td><td>" + actions(item.id) + "</td></tr>";
     })));
   }
 
@@ -1162,6 +1163,7 @@
     var catalogForm = !!root.querySelector('[data-file="pdf"]');
     var brandForm = !!root.querySelector("[data-brand-form]");
     var sliderForm = !!root.querySelector("[data-slider-form]");
+    var galleryForm = !!root.querySelector("[data-gallery-form]");
     root.querySelectorAll("[data-file]").forEach(function (input) {
       input.addEventListener("change", function () {
         var file = input.files && input.files[0];
@@ -1170,7 +1172,7 @@
         var isPdf = name === "pdf" || file.type === "application/pdf";
         var aboutDocForm = !!root.querySelector('[data-about-item="documents"]');
         var aboutSectionForm = !!root.querySelector('[data-about-item="corporate"]');
-        var storeFile = isPdf || (catalogForm && name === "image") || brandForm || sliderForm || (aboutDocForm && name === "file") || (aboutSectionForm && name === "image");
+        var storeFile = isPdf || (catalogForm && name === "image") || brandForm || sliderForm || galleryForm || (aboutDocForm && name === "file") || (aboutSectionForm && name === "image");
         if (storeFile) {
           if (isPdf && file.size > MAX_PDF_BYTES) {
             toast("PDF 20 MB’den büyük olamaz");
@@ -1193,6 +1195,11 @@
             return;
           }
           if (sliderForm && file.size > MAX_BRAND_BYTES) {
+            toast("Görsel 5 MB’den büyük olamaz");
+            input.value = "";
+            return;
+          }
+          if (galleryForm && file.size > MAX_BRAND_BYTES) {
             toast("Görsel 5 MB’den büyük olamaz");
             input.value = "";
             return;
@@ -1230,6 +1237,10 @@
               sliderFormEl._sliderFiles = sliderFormEl._sliderFiles || {};
               sliderFormEl._sliderFiles[name] = file;
             }
+          }
+          if (galleryForm) {
+            var galleryFormEl = input.closest("form");
+            if (galleryFormEl) galleryFormEl._galleryFile = file;
           }
           var box = input.closest(".brand-field") || input.closest(".upload-field");
           if (box) {
@@ -1323,6 +1334,43 @@
       item[el.name] = el.type === "number" ? Number(el.value) : el.value;
     });
     return item;
+  }
+
+  function saveGallery(form, current) {
+    var item = formToItem(form, current);
+    if (item.image === "pending" || (item.image && item.image.indexOf("data:") === 0)) {
+      item.image = current && current.image && current.image.indexOf("data:") !== 0 ? current.image : "../images/fruits.jpg";
+    }
+    if (!item.id) item.id = GrosperStore.uid();
+    var imageInput = form.querySelector('[data-file="image"]');
+    var imageFile = form._galleryFile || (imageInput && imageInput.files && imageInput.files[0]);
+
+    function finish() {
+      GrosperStore.upsert("gallery", item);
+      toast("Kayıt kaydedildi");
+      editing = null;
+      render();
+    }
+
+    if (imageFile && imageFile.size > MAX_BRAND_BYTES) {
+      toast("Görsel 5 MB’den büyük olamaz");
+      return;
+    }
+    if (imageFile && !window.GrosperFiles) {
+      toast("Dosya kaydedilemedi. Sayfayı yenileyip tekrar deneyin.");
+      return;
+    }
+    if (imageFile) {
+      var imageKey = "gallery-" + item.id;
+      GrosperFiles.put(imageKey, imageFile).then(function () {
+        item.image = "idb:" + imageKey;
+        finish();
+      }).catch(function () {
+        toast("Dosya kaydedilemedi. Sayfayı yenileyip tekrar deneyin.");
+      });
+      return;
+    }
+    finish();
   }
 
   function saveSlider(form, current) {
@@ -1566,6 +1614,9 @@
             if (deleted.image && deleted.image.indexOf("idb:") === 0) GrosperFiles.remove(deleted.image.slice(4));
             if (deleted.mobileImage && deleted.mobileImage.indexOf("idb:") === 0) GrosperFiles.remove(deleted.mobileImage.slice(4));
           }
+          if (col === "gallery" && deleted.image && deleted.image.indexOf("idb:") === 0) {
+            GrosperFiles.remove(deleted.image.slice(4));
+          }
         }
         GrosperStore.remove(col, del.getAttribute("data-del"));
         toast("Kayıt silindi");
@@ -1654,6 +1705,10 @@
       }
       if (view === "sliders") {
         saveSlider(form, current);
+        return;
+      }
+      if (view === "gallery") {
+        saveGallery(form, current);
         return;
       }
       try {
