@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=18">
   <script src="js/theme.js?v=8"></script>
 </head>
 <body data-page="home" data-root="">
@@ -95,20 +95,6 @@
       </div>
     </section>
 
-    <section class="section delivery">
-      <div class="container">
-        <article class="delivery-banner">
-          <img src="images/woman.jpg" alt="Market teslimatı">
-          <div class="delivery-banner__copy">
-            <p class="delivery-banner__tag">Aynı gün teslimat</p>
-            <h2>Market alışverişiniz kapınıza kadar teslim ediliyor.</h2>
-            <p>Her zaman hizmetinizdeyiz.</p>
-            <a class="btn btn--red" href="sayfalar/subeler.html">Şimdi Sipariş Verin</a>
-          </div>
-        </article>
-      </div>
-    </section>
-
     <section class="section brands" id="multimedya">
       <div class="container">
         <div class="brands__head">
@@ -125,13 +111,37 @@
         </div>
       </div>
     </section>
+
+    <section class="section newsletter-cta" id="bulten-abone" aria-labelledby="newsletter-cta-title">
+      <div class="container">
+        <div class="newsletter-cta__card">
+          <div class="newsletter-cta__media" aria-hidden="true">
+            <img src="images/newsletter-cta.jpg" alt="">
+          </div>
+          <div class="newsletter-cta__body">
+            <h2 class="newsletter-cta__title" id="newsletter-cta-title">Güncel kampanyalarımız için fırsatları kaçırmayın</h2>
+            <form class="newsletter-cta__form" id="newsletter-form" novalidate>
+              <div class="newsletter-cta__field">
+                <button type="submit" class="newsletter-cta__btn">Abone</button>
+                <label class="newsletter-cta__input-wrap">
+                  <span class="visually-hidden">E-posta adresiniz</span>
+                  <input type="email" name="email" placeholder="E-posta adresinizi girin" required autocomplete="email">
+                </label>
+              </div>
+              <p class="newsletter-cta__msg" id="newsletter-msg" hidden role="status"></p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
 
   <div id="site-footer"></div>
-  <script src="admin/js/store.js?v=10"></script>
+  <script src="admin/js/store.js?v=18"></script>
   <script src="admin/js/files.js?v=8"></script>
   <script src="js/brand.js?v=2"></script>
-  <script src="js/banners.js"></script>
-  <script src="js/hero.js"></script>
+  <script src="js/banners.js?v=3"></script>
+  <script src="js/hero.js?v=1"></script>
+  <script src="js/newsletter.js?v=2"></script>
 </body>
 </html>

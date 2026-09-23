@@ -1,4 +1,5 @@
 (function () {
+  function initHeroSlider() {
   var slider = document.querySelector("[data-hero-slider]");
   if (!slider) return;
 
@@ -8,6 +9,7 @@
   var next = slider.querySelector("[data-hero-next]");
   var dots = slider.querySelectorAll("[data-hero-dot]");
   var total = slides.length;
+  if (!track || total < 1) return;
   var index = 0;
   var timer = null;
   var delay = 5500;
@@ -89,5 +91,8 @@
   });
 
   goTo(0);
-  play();
+  if (total > 1) play();
+  }
+
+  initHeroSlider();
 })();

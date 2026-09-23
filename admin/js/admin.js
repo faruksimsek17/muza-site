@@ -13,7 +13,7 @@
     branches: ["Şubeler", "Mağaza adresleri ve çalışma saatleri"],
     reviews: ["Yorumlar", "Müşteri yorumları"],
     jobs: ["İş Başvuruları", "Gelen başvurular"],
-    subscribers: ["Bülten Kayıtları", "İndirim bülteni e-posta kayıtları"],
+    subscribers: ["Bülten Aboneleri", "Ana sayfadaki Abone formundan gelen e-posta kayıtları"],
     catalogs: ["İndirim Bülteni", "PDF broşür ve katalog kapakları"],
     about: ["Hakkımızda", "Kurumsal, referanslar ve belgeler sayfalarını buradan düzenleyin."],
     "about-corporate": ["Kurumsal", "Hakkımızda sayfasındaki kurumsal metinleri düzenleyin."],
@@ -170,11 +170,29 @@
         '<article class="stat"><span>Haber</span><strong>' + data.news.length + "</strong></article>" +
         '<article class="stat"><span>Katalog</span><strong>' + (data.catalogs || []).length + "</strong></article>" +
         '<article class="stat"><span>Yeni başvuru</span><strong>' + data.jobs.filter(function (j) { return j.status === "yeni"; }).length + "</strong></article>" +
+        '<article class="stat"><span>Bülten abonesi</span><strong>' + (data.subscribers || []).length + "</strong></article>" +
       "</div>" +
+      panel("Son bülten aboneleri", '<a class="btn btn-ghost" href="#subscribers">Tümünü gör</a>', table(["E-posta", "Kaynak", "Tarih"], rowsFrom((data.subscribers || []).slice().sort(function (a, b) {
+        return String(b.date || "").localeCompare(String(a.date || ""));
+      }).slice(0, 5), function (item) {
+        return "<tr><td>" + escapeHtml(item.email) + "</td><td>" + escapeHtml(subscriberSource(item)) + "</td><td>" + escapeHtml(item.date) + "</td></tr>";
+      }))) +
       panel("Son haberler", "", table(["Tarih", "Başlık", "Durum"], rowsFrom(data.news.slice(0, 4), function (item) {
         return "<tr><td>" + escapeHtml(item.date) + "</td><td>" + escapeHtml(item.title) + "</td><td>" + statusBadge(item.status) + "</td></tr>";
       })))
     );
+  }
+
+  function subscriberSource(item) {
+    if (item.source === "ana-sayfa") return "Ana sayfa";
+    if (item.name && item.name !== "Ana sayfa") return item.name;
+    return item.name || "Manuel";
+  }
+
+  function subscriberRows() {
+    return GrosperStore.list("subscribers").slice().sort(function (a, b) {
+      return String(b.date || "").localeCompare(String(a.date || ""));
+    });
   }
 
   function addButton() {
@@ -483,8 +501,8 @@
         item.id
       ));
     }
-    return panel("Bülten kayıtları", addButton(), table(["Ad", "E-posta", "Tarih", ""], rowsFrom(GrosperStore.list("subscribers"), function (item) {
-      return "<tr><td>" + escapeHtml(item.name) + "</td><td>" + escapeHtml(item.email) + "</td><td>" + escapeHtml(item.date) + "</td><td>" + actions(item.id) + "</td></tr>";
+    return panel("Bülten aboneleri", addButton(), table(["E-posta", "Kaynak", "Tarih", ""], rowsFrom(subscriberRows(), function (item) {
+      return "<tr><td>" + escapeHtml(item.email) + "</td><td>" + escapeHtml(subscriberSource(item)) + "</td><td>" + escapeHtml(item.date) + "</td><td>" + actions(item.id) + "</td></tr>";
     })));
   }
 
