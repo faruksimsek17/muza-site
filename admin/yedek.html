@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>İçerik yedeği — Grosper</title>
+  <link rel="stylesheet" href="css/admin.css?v=15">
+</head>
+<body class="login-body">
+  <main class="login-card">
+    <img class="login-logo" src="../images/logo.png" alt="Grosper">
+    <h1>Dosyaya yedek</h1>
+    <p class="login-lead" id="backup-status">Bu tarayıcıdaki tüm içerik masaüstüne yazılıyor...</p>
+    <p class="login-hint">Adres: <strong>http://127.0.0.1:5500/admin/yedek.html</strong></p>
+    <p style="margin-top:16px">
+      <a class="btn btn-primary" href="panel.html">Admin panele dön</a>
+    </p>
+  </main>
+  <script src="../data/cms.js?v=7"></script>
+  <script src="../data/inbox.js?v=1"></script>
+  <script src="js/store.js?v=27"></script>
+  <script src="js/files.js?v=9"></script>
+  <script>
+    (function () {
+      var status = document.getElementById("backup-status");
+      if (!window.GrosperStore || !GrosperStore.backupToDisk) {
+        status.textContent = "Yedek kodu yüklenemedi.";
+        return;
+      }
+      GrosperStore.backupToDisk().then(function (result) {
+        if (result && result.ok) {
+          status.textContent = "Tamam. " + (result.files || 0) + " görsel images/uploads klasörüne yazıldı. Metin yedeği data/cms.js içinde.";
+          return;
+        }
+        status.textContent = "Yazılamadı. Yerel sunucuyu python3 scripts/cms-server.py ile açıp bu sayfayı yenileyin.";
+      });
+    })();
+  </script>
+</body>
+</html>

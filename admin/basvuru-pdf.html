@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Başvuru PDF — Grosper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css?v=16">
+  <style>
+    .pdf-shell { min-height: 100vh; background: #f4f5f7; }
+    .pdf-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 16px 22px;
+      background: #fff;
+      border-bottom: 1px solid #ececec;
+    }
+    .pdf-bar h1 { font-size: 18px; }
+    .pdf-bar p { color: #6b6b6b; font-size: 13px; margin-top: 4px; }
+    .pdf-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .pdf-page {
+      width: min(920px, calc(100% - 32px));
+      display: block;
+      margin: 16px auto 24px;
+      background: #fff;
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    }
+    .pdf-status { padding: 48px 22px; text-align: center; color: #6b6b6b; }
+  </style>
+</head>
+<body class="pdf-shell">
+  <header class="pdf-bar">
+    <div>
+      <h1 id="pdf-title">Başvuru PDF</h1>
+      <p id="pdf-meta">Hazırlanıyor...</p>
+    </div>
+    <div class="pdf-actions">
+      <a class="btn btn-ghost" href="panel.html#jobs">Panele dön</a>
+      <a class="btn btn-primary" id="pdf-download" hidden>PDF indir</a>
+    </div>
+  </header>
+  <p class="pdf-status" id="pdf-status">Başvuru PDF’i hazırlanıyor...</p>
+  <script src="../data/cms.js?v=7"></script>
+  <script src="../data/inbox.js?v=1"></script>
+  <script src="js/store.js?v=27"></script>
+  <script src="js/files.js?v=9"></script>
+  <script src="js/job-pdf.js?v=4"></script>
+  <script>
+    (function () {
+      if (window.sessionStorage.getItem("grosper-admin-auth") !== "1") {
+        window.location.href = "index.html";
+        return;
+      }
+      var params = new URLSearchParams(window.location.search);
+      var id = params.get("id");
+      var status = document.getElementById("pdf-status");
+      var title = document.getElementById("pdf-title");
+      var meta = document.getElementById("pdf-meta");
+      var download = document.getElementById("pdf-download");
+      var job = (window.GrosperStore ? GrosperStore.list("jobs") : []).filter(function (item) {
+        return item.id === id;
+      })[0];
+      if (!job) {
+        status.textContent = "Başvuru bulunamadı.";
+        return;
+      }
+      title.textContent = job.name || "İş başvurusu";
+      meta.textContent = [job.role, job.date].filter(Boolean).join(" • ");
+      GrosperJobPdf.preview(job).then(function (result) {
+        var url = URL.createObjectURL(result.blob);
+        status.remove();
+        (result.pages || []).forEach(function (src, index) {
+          var img = document.createElement("img");
+          img.className = "pdf-page";
+          img.alt = "Başvuru PDF sayfa " + (index + 1);
+          img.src = src;
+          document.body.appendChild(img);
+        });
+        download.href = url;
+        download.download = "grosper-basvuru-" + String(job.name || "basvuru").replace(/\s+/g, "-") + ".pdf";
+        download.hidden = false;
+      }).catch(function () {
+        status.textContent = "PDF hazırlanamadı. Sayfayı yenileyip tekrar deneyin.";
+      });
+    })();
+  </script>
+</body>
+</html>

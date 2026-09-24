@@ -12,7 +12,7 @@
     videos: ["Videolar", "YouTube video bağlantıları"],
     branches: ["Şubeler", "Mağaza adresleri ve çalışma saatleri"],
     reviews: ["Yorumlar", "Müşteri yorumları"],
-    jobs: ["İş Başvuruları", "Gelen başvurular"],
+    jobs: ["İş Başvuruları", "Gelen başvuruları PDF olarak inceleyin"],
     subscribers: ["Bülten Aboneleri", "Ana sayfadaki Abone formundan gelen e-posta kayıtları"],
     catalogs: ["İndirim Bülteni", "PDF broşür ve katalog kapakları"],
     about: ["Hakkımızda", "Kurumsal, referanslar ve belgeler sayfalarını buradan düzenleyin."],
@@ -92,6 +92,16 @@
     );
   }
 
+  function jobActions(id) {
+    return (
+      '<div class="row-actions">' +
+        '<button class="btn btn-ghost" type="button" data-job-pdf="' + id + '">PDF</button>' +
+        '<button class="btn btn-ghost" type="button" data-edit="' + id + '">Düzenle</button>' +
+        '<button class="btn btn-danger" type="button" data-del="' + id + '">Sil</button>' +
+      "</div>"
+    );
+  }
+
   function panel(title, extra, body) {
     return (
       '<article class="panel">' +
@@ -118,11 +128,12 @@
     return "<label" + cls + ">" + label + '<input type="' + (type || "text") + '" name="' + name + '" value="' + escapeHtml(value) + '"></label>';
   }
 
-  function renderForm(fieldsHtml, id) {
+  function renderForm(fieldsHtml, id, extraStart) {
     return (
       '<form class="editor" data-id="' + escapeHtml(id || "") + '">' +
         '<div class="form-grid">' + fieldsHtml + "</div>" +
         '<div class="form-actions">' +
+          (extraStart || "") +
           '<button class="btn btn-ghost" type="button" data-cancel>Vazgeç</button>' +
           '<button class="btn btn-primary" type="submit">Kaydet</button>' +
         "</div>" +
@@ -415,7 +426,7 @@
       return panel("Yorum düzenle", "", renderForm(
         field("Ad", "name", item.name) +
         field("İlçe", "city", item.city) +
-        field("Puan", "stars", item.stars, "number") +
+        field("Puan (1-5)", "stars", item.stars, "number") +
         field("Durum", "status", item.status, "select") +
         field("Yorum", "text", item.text, "textarea", true),
         item.id
@@ -448,11 +459,12 @@
           "<option value='incelendi'" + (editing.status === "incelendi" ? " selected" : "") + ">İncelendi</option>" +
         "</select></label>" +
         (photo ? '<div class="full upload-field"><strong>Fotoğraf</strong>' + photo + "</div>" : ""),
-        editing.id
+        editing.id,
+        '<button class="btn btn-ghost" type="button" data-job-pdf="' + escapeHtml(editing.id) + '">PDF olarak incele</button>'
       ));
     }
     return panel("İş başvuruları", "", table(["Fotoğraf", "Ad", "Pozisyon", "Tarih", "Durum", ""], rowsFrom(GrosperStore.list("jobs"), function (item) {
-      return "<tr><td>" + (jobPhotoHtml(item, "thumb") || "—") + "</td><td>" + escapeHtml(item.name) + "</td><td>" + escapeHtml(item.role) + "</td><td>" + escapeHtml(item.date) + "</td><td>" + statusBadge(item.status) + "</td><td>" + actions(item.id) + "</td></tr>";
+      return "<tr><td>" + (jobPhotoHtml(item, "thumb") || "—") + "</td><td>" + escapeHtml(item.name) + "</td><td>" + escapeHtml(item.role) + "</td><td>" + escapeHtml(item.date) + "</td><td>" + statusBadge(item.status) + "</td><td>" + jobActions(item.id) + "</td></tr>";
     })));
   }
 
@@ -1567,6 +1579,18 @@
       });
     }
 
+    var backupBtn = document.getElementById("backup-btn");
+    if (backupBtn && window.GrosperStore && GrosperStore.backupToDisk) {
+      backupBtn.addEventListener("click", function () {
+        backupBtn.disabled = true;
+        toast("Dosyalara yazılıyor...");
+        GrosperStore.backupToDisk().then(function (result) {
+          backupBtn.disabled = false;
+          toast(result && result.ok ? "Tüm içerik masaüstüne yazıldı" : "Yerel sunucu kapalı. python3 scripts/cms-server.py ile açın.");
+        });
+      });
+    }
+
     var root = document.getElementById("view");
     root.addEventListener("click", function (event) {
       var add = event.target.closest("[data-add]");
@@ -1575,7 +1599,27 @@
       var del = event.target.closest("[data-del]");
       var cancel = event.target.closest("[data-cancel]");
       var reset = event.target.closest("[data-reset]");
+      var jobPdf = event.target.closest("[data-job-pdf]");
       var col = collectionFor(view);
+
+      if (jobPdf) {
+        var pdfJob = findItem("jobs", jobPdf.getAttribute("data-job-pdf"));
+        if (!pdfJob) {
+          toast("Başvuru bulunamadı");
+          return;
+        }
+        if (!window.GrosperJobPdf) {
+          toast("PDF görüntüleyici yüklenemedi");
+          return;
+        }
+        toast("PDF hazırlanıyor...");
+        GrosperJobPdf.open(pdfJob).then(function () {
+          toast("PDF açıldı");
+        }).catch(function () {
+          toast("PDF açılamadı");
+        });
+        return;
+      }
 
       if (addUser) {
         setView("users");

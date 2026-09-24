@@ -67,9 +67,54 @@
     });
   }
 
+  function keys() {
+    return openDb().then(function (db) {
+      return new Promise(function (resolve, reject) {
+        var req = db.transaction(STORE, "readonly").objectStore(STORE).getAllKeys();
+        req.onsuccess = function () {
+          resolve(req.result || []);
+        };
+        req.onerror = function () {
+          reject(req.error);
+        };
+      });
+    });
+  }
+
+  function extFromType(type, fallback) {
+    if (type === "image/png") return "png";
+    if (type === "image/jpeg" || type === "image/jpg") return "jpg";
+    if (type === "image/webp") return "webp";
+    if (type === "image/gif") return "gif";
+    if (type === "image/svg+xml") return "svg";
+    if (type === "application/pdf") return "pdf";
+    return fallback || "bin";
+  }
+
+  function safeName(name) {
+    return String(name || "file")
+      .replace(/[^A-Za-z0-9._-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80) || "file";
+  }
+
+  function upload(name, blob) {
+    return fetch("/__cms-file?name=" + encodeURIComponent(name), {
+      method: "POST",
+      body: blob
+    }).then(function (res) {
+      if (!res.ok) throw new Error("upload-failed");
+      return res.json();
+    });
+  }
+
   window.GrosperFiles = {
     put: put,
     get: get,
-    remove: remove
+    remove: remove,
+    keys: keys,
+    extFromType: extFromType,
+    safeName: safeName,
+    upload: upload
   };
 })(window);

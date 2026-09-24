@@ -59,7 +59,7 @@
     return {
       corporate: {
         title: "Kurumsal",
-        lead: "Grosper, taze ürünleri ve aynı gün teslimatıyla mahalle marketini dijitalleştiren bir online market markasıdır."
+        lead: "Mahalle marketinin tezgâhını, İstanbul’un temposuna taşıyan bir yolculuk."
       },
       references: {
         title: "Referanslar",
@@ -141,9 +141,9 @@
       ],
       about: defaultAbout(),
       aboutSections: [
-        { id: uid(), title: "Hikayemiz", body: "2016’dan bu yana İstanbul’da başlayan yolculuğumuz, müşterilerimize taze meyve-sebzeden temel gıdaya kadar binlerce ürünü kapıya kadar ulaştırma hedefiyle büyüdü." },
-        { id: uid(), title: "Misyonumuz", body: "Kaliteli ürünü adil fiyatla, hızlı ve güvenilir teslimatla sunmak. Her siparişte şeffaf, taze ve ulaşılabilir bir alışveriş deneyimi vermek." },
-        { id: uid(), title: "Vizyonumuz", body: "Türkiye’nin en güvenilen mahalle marketi olmak ve her evin günlük ihtiyacını tek bir uygulamadan karşılamak." }
+        { id: uid(), title: "Hikayemiz", body: "İstanbul’da 2016’da başlayan hikâyemiz, bir tezgâhın başından çıktı; evlerin mutfağına uzandı. Taze meyve-sebzeden temel gıdaya, binlerce ürünü kapıya kadar aynı özenle ulaştırmak istedik. Yolculuk büyüdü; vaat değişmedi." },
+        { id: uid(), title: "Misyonumuz", body: "Kaliteli ürünü adil fiyatla, hızlı ve güvenilir teslimatla sunmak. Her sepette şeffaf, taze ve ulaşılabilir bir alışveriş." },
+        { id: uid(), title: "Vizyonumuz", body: "Türkiye’nin en güvenilen mahalle marketi olmak. Her evin günlük ihtiyacını tek bir adresten karşılamak." }
       ],
       aboutRefs: [
         { id: uid(), title: "Nestlé", text: "Kahvaltılık ve süt ürünleri tedarik partneri." },
@@ -301,15 +301,274 @@
     }
   }
 
+  function cloneData(data) {
+    return JSON.parse(JSON.stringify(data));
+  }
+
+  function fileSnapshot() {
+    var file = window.GROSPER_CMS_FILE;
+    return file && typeof file === "object" ? file : null;
+  }
+
+  function fileVersion(data) {
+    return Number((data && data.cmsFileVersion) || 0);
+  }
+
+  function collectMediaRefs(obj, acc) {
+    if (!obj || typeof obj !== "object") return acc;
+    Object.keys(obj).forEach(function (key) {
+      var val = obj[key];
+      if (typeof val === "string" && (val.indexOf("idb:") === 0 || val.indexOf("data:") === 0)) {
+        acc.push({ obj: obj, key: key, val: val });
+        return;
+      }
+      if (val && typeof val === "object") collectMediaRefs(val, acc);
+    });
+    return acc;
+  }
+
+  function blobFromRef(ref) {
+    if (ref.indexOf("idb:") === 0) {
+      if (!window.GrosperFiles) return Promise.resolve(null);
+      return GrosperFiles.get(ref.slice(4));
+    }
+    return fetch(ref).then(function (res) {
+      return res.ok ? res.blob() : null;
+    }).catch(function () {
+      return null;
+    });
+  }
+
+  function filePathFor(key, blob, fieldKey) {
+    var fallback = fieldKey === "pdf" || fieldKey === "file" ? "pdf" : "jpg";
+    var ext = window.GrosperFiles
+      ? GrosperFiles.extFromType(blob && blob.type, fallback)
+      : fallback;
+    var base = window.GrosperFiles ? GrosperFiles.safeName(key) : String(key || "file").replace(/[^A-Za-z0-9._-]+/g, "-");
+    if (!/\.[A-Za-z0-9]+$/.test(base)) base += "." + ext;
+    if (fieldKey === "headerLogo" || fieldKey === "footerLogo" || fieldKey === "favicon" || fieldKey === "ogImage") {
+      return "images/uploads/" + base;
+    }
+    return "../images/uploads/" + base;
+  }
+
+  function postCmsBackup(data) {
+    return fetch("/__cms-backup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    }).then(function (res) {
+      if (!res.ok) throw new Error("backup-failed");
+      return res.json();
+    });
+  }
+
+  var backupTimer = null;
+  var backupInFlight = null;
+
+  function backupToDisk(options) {
+    options = options || {};
+    var data = cloneData(options.data || read());
+    var refs = collectMediaRefs(data, []);
+    var extraKeys = Promise.resolve([]);
+    if (window.GrosperFiles && GrosperFiles.keys) {
+      extraKeys = GrosperFiles.keys().catch(function () {
+        return [];
+      });
+    }
+
+    return extraKeys.then(function (keys) {
+      (keys || []).forEach(function (key) {
+        var already = refs.some(function (item) {
+          return item.val === "idb:" + key;
+        });
+        if (!already) refs.push({ obj: null, key: key, val: "idb:" + key, orphan: true });
+      });
+
+      var uploaded = 0;
+      var queue = Promise.resolve();
+      refs.forEach(function (item) {
+        queue = queue.then(function () {
+          return blobFromRef(item.val).then(function (blob) {
+            if (!blob || !window.GrosperFiles || !GrosperFiles.upload) return;
+            var rawKey = item.val.indexOf("idb:") === 0 ? item.val.slice(4) : (item.key || "file");
+            var path = filePathFor(rawKey, blob, item.key);
+            var name = path.replace(/^(\.\.\/)?images\/uploads\//, "");
+            return GrosperFiles.upload(name, blob).then(function (saved) {
+              uploaded += 1;
+              var next = (saved && saved.path) ? "../" + saved.path.replace(/^\.\.\//, "") : path;
+              if (item.key === "headerLogo" || item.key === "footerLogo" || item.key === "favicon" || item.key === "ogImage") {
+                next = (saved && saved.path) ? saved.path.replace(/^\.\.\//, "") : path.replace(/^\.\.\//, "");
+              }
+              if (item.obj) item.obj[item.key] = next;
+            });
+          });
+        });
+      });
+      return queue.then(function () {
+        return uploaded;
+      });
+    }).then(function (uploaded) {
+      mergeInbound(data, readInbox());
+      data.cmsFileVersion = Date.now();
+      persist(data);
+      return postCmsBackup(data).then(function () {
+        return { ok: true, version: data.cmsFileVersion, files: uploaded || 0 };
+      });
+    }).catch(function (error) {
+      return { ok: false, error: error && error.message ? error.message : "backup-failed" };
+    });
+  }
+
+  function queueBackup() {
+    if (backupTimer) window.clearTimeout(backupTimer);
+    backupTimer = window.setTimeout(function () {
+      backupTimer = null;
+      if (backupInFlight) return;
+      backupInFlight = backupToDisk().then(function (result) {
+        backupInFlight = null;
+        return result;
+      });
+    }, 400);
+  }
+
+  var INBOUND_KEYS = ["jobs", "subscribers"];
+  var INBOX_LS = "grosper-inbox-v1";
+
+  function mergeById(target, extra, key) {
+    if (!target || !extra) return target;
+    var map = {};
+    (target[key] || []).concat(extra[key] || []).forEach(function (item) {
+      if (!item || !item.id) return;
+      map[item.id] = item;
+    });
+    target[key] = Object.keys(map).map(function (id) {
+      return map[id];
+    });
+    return target;
+  }
+
+  function mergeInbound(target, extra) {
+    if (!target || !extra) return target;
+    INBOUND_KEYS.forEach(function (key) {
+      var map = {};
+      (target[key] || []).concat(extra[key] || []).forEach(function (item) {
+        if (!item || !item.id) return;
+        map[item.id] = item;
+      });
+      target[key] = Object.keys(map).map(function (id) {
+        return map[id];
+      });
+      if (key === "jobs") {
+        target[key].sort(function (a, b) {
+          return String(b.date || "").localeCompare(String(a.date || "")) || String(b.id).localeCompare(String(a.id));
+        });
+      }
+    });
+    return target;
+  }
+
+  function dropIds(list, ids) {
+    var skip = {};
+    (ids || []).forEach(function (id) {
+      skip[id] = true;
+    });
+    return (list || []).filter(function (item) {
+      return item && item.id && !skip[item.id];
+    });
+  }
+
+  function uniqIds(a, b) {
+    var map = {};
+    (a || []).concat(b || []).forEach(function (id) {
+      if (id) map[id] = true;
+    });
+    return Object.keys(map);
+  }
+
+  function emptyInbox() {
+    return { jobs: [], subscribers: [], removedJobs: [], removedSubscribers: [] };
+  }
+
+  function applyInboxRemovals(inbox) {
+    inbox.jobs = dropIds(inbox.jobs, inbox.removedJobs);
+    inbox.subscribers = dropIds(inbox.subscribers, inbox.removedSubscribers);
+    return inbox;
+  }
+
+  function readInbox() {
+    var inbox = emptyInbox();
+    var file = window.GROSPER_INBOX || {};
+    var local = {};
+    try {
+      local = JSON.parse(window.localStorage.getItem(INBOX_LS) || "{}") || {};
+    } catch (error) {}
+    mergeInbound(inbox, file);
+    mergeInbound(inbox, local);
+    inbox.removedJobs = uniqIds(file.removedJobs, local.removedJobs);
+    inbox.removedSubscribers = uniqIds(file.removedSubscribers, local.removedSubscribers);
+    return applyInboxRemovals(inbox);
+  }
+
+  function persistInbox(inbox) {
+    var payload = {
+      jobs: inbox.jobs || [],
+      subscribers: inbox.subscribers || [],
+      removedJobs: inbox.removedJobs || [],
+      removedSubscribers: inbox.removedSubscribers || []
+    };
+    window.GROSPER_INBOX = payload;
+    try {
+      window.localStorage.setItem(INBOX_LS, JSON.stringify(payload));
+    } catch (error) {}
+  }
+
+  function postInbox(payload) {
+    return fetch("/__cms-inbox", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).catch(function () {
+      return null;
+    });
+  }
+
+  function syncInboxFrom(data, extra) {
+    extra = extra || {};
+    var inbox = readInbox();
+    mergeInbound(inbox, { jobs: data.jobs, subscribers: data.subscribers });
+    inbox.removedJobs = uniqIds(inbox.removedJobs, extra.removeJobs);
+    inbox.removedSubscribers = uniqIds(inbox.removedSubscribers, extra.removeSubscribers);
+    applyInboxRemovals(inbox);
+    persistInbox(inbox);
+    mergeInbound(data, inbox);
+    postInbox({
+      jobs: inbox.jobs,
+      subscribers: inbox.subscribers,
+      removeJobs: inbox.removedJobs,
+      removeSubscribers: inbox.removedSubscribers
+    });
+    return inbox;
+  }
+
   function read() {
     try {
+      var file = fileSnapshot();
       var raw = window.localStorage.getItem(KEY);
-      if (!raw) {
-        var fresh = seed();
-        persist(fresh);
-        return fresh;
+      var parsed = raw ? JSON.parse(raw) : null;
+      if (!parsed) {
+        parsed = file ? cloneData(file) : seed();
+        persist(parsed);
+      } else if (file && fileVersion(file) > fileVersion(parsed) && fileVersion(parsed) > 0) {
+        var incoming = cloneData(parsed);
+        parsed = cloneData(file);
+        mergeInbound(parsed, incoming);
+        mergeById(parsed, incoming, "reviews");
+        persist(parsed);
+      } else if (file) {
+        mergeInbound(parsed, file);
       }
-      var parsed = JSON.parse(raw);
+      if (file) mergeById(parsed, file, "reviews");
       var fresh = seed();
       Object.keys(fresh).forEach(function (key) {
         if (key === "catalogFileVersion" || key === "branchesVersion") return;
@@ -348,6 +607,10 @@
         parsed.catalogs.push(Object.assign({}, fresh.catalogs[2], { id: uid() }));
       }
       parsed.catalogFileVersion = 3;
+      var inbox = readInbox();
+      mergeInbound(parsed, inbox);
+      parsed.jobs = dropIds(parsed.jobs, inbox.removedJobs);
+      parsed.subscribers = dropIds(parsed.subscribers, inbox.removedSubscribers);
       persist(parsed) || persist(stripAllBinaries(parsed));
       return parsed;
     } catch (error) {
@@ -357,21 +620,35 @@
     }
   }
 
-  function write(data) {
+  function write(data, options) {
+    options = options || {};
     stripCatalogs(data);
     stripBrand(data);
-    if (persist(data)) return data;
-    stripAllBinaries(data);
-    if (persist(data)) return data;
-    window.localStorage.removeItem(KEY);
-    if (persist(data)) return data;
-    var fresh = seed();
-    fresh.catalogs = slimCatalogs(data.catalogs || fresh.catalogs);
-    if (!persist(fresh)) {
-      window.localStorage.removeItem(KEY);
-      persist(seed());
+    data.cmsFileVersion = Date.now();
+    var saved = null;
+    if (persist(data)) saved = data;
+    else {
+      stripAllBinaries(data);
+      if (persist(data)) saved = data;
+      else {
+        window.localStorage.removeItem(KEY);
+        if (persist(data)) saved = data;
+      }
     }
-    return fresh;
+    if (!saved) {
+      var fresh = seed();
+      fresh.catalogs = slimCatalogs(data.catalogs || fresh.catalogs);
+      fresh.cmsFileVersion = Date.now();
+      if (!persist(fresh)) {
+        window.localStorage.removeItem(KEY);
+        persist(seed());
+      }
+      saved = fresh;
+    }
+    syncInboxFrom(saved, options);
+    persist(saved) || persist(stripAllBinaries(saved));
+    queueBackup();
+    return saved;
   }
 
   function list(collection) {
@@ -379,10 +656,10 @@
     return data[collection] || [];
   }
 
-  function saveAll(collection, items) {
+  function saveAll(collection, items, options) {
     var data = read();
     data[collection] = items;
-    return write(data);
+    return write(data, options);
   }
 
   function upsert(collection, item) {
@@ -398,9 +675,12 @@
   }
 
   function remove(collection, id) {
+    var options = {};
+    if (collection === "jobs") options.removeJobs = [id];
+    if (collection === "subscribers") options.removeSubscribers = [id];
     saveAll(collection, list(collection).filter(function (row) {
       return row.id !== id;
-    }));
+    }), options);
   }
 
   function getAbout() {
@@ -561,6 +841,7 @@
     saveSliderSettings: saveSliderSettings,
     getStats: getStats,
     bumpStat: bumpStat,
-    reset: reset
+    reset: reset,
+    backupToDisk: backupToDisk
   };
 })(window);

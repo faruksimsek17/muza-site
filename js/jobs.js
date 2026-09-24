@@ -52,7 +52,13 @@
       }
       return;
     }
-    if (!window.GrosperStore) return;
+    if (!window.GrosperStore) {
+      if (error) {
+        error.textContent = "Kayıt sistemi yüklenemedi. Sayfayı yenileyip tekrar deneyin.";
+        error.hidden = false;
+      }
+      return;
+    }
 
     var item = {
       id: GrosperStore.uid(),
@@ -77,19 +83,29 @@
       if (ok) ok.classList.add("is-visible");
     }
 
-    if (window.GrosperFiles) {
-      var key = "job-photo-" + item.id;
-      GrosperFiles.put(key, file).then(function () {
-        item.photo = "idb:" + key;
-        finish();
-      }).catch(function () {
-        if (error) {
-          error.textContent = "Fotoğraf kaydedilemedi. Tekrar deneyin.";
-          error.hidden = false;
-        }
-      });
-      return;
+    function failPhoto() {
+      if (error) {
+        error.textContent = "Fotoğraf kaydedilemedi. Tekrar deneyin.";
+        error.hidden = false;
+      }
     }
-    finish();
+
+    var key = "job-photo-" + item.id;
+    var saveLocal = window.GrosperFiles ? GrosperFiles.put(key, file) : Promise.resolve();
+    var ext = window.GrosperFiles && GrosperFiles.extFromType ? GrosperFiles.extFromType(file.type, "jpg") : "jpg";
+    var uploadName = (window.GrosperFiles && GrosperFiles.safeName ? GrosperFiles.safeName(key) : key) + "." + ext;
+    var saveDisk = window.GrosperFiles && GrosperFiles.upload
+      ? GrosperFiles.upload(uploadName, file)
+      : Promise.resolve(null);
+
+    saveLocal.then(function () {
+      return saveDisk.catch(function () {
+        return null;
+      });
+    }).then(function (saved) {
+      if (saved && saved.path) item.photo = "../" + String(saved.path).replace(/^\.\.\//, "");
+      else item.photo = "idb:" + key;
+      finish();
+    }).catch(failPhoto);
   });
 })();
