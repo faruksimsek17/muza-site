@@ -43,9 +43,55 @@
         address: item.address,
         phone: item.phone,
         hours: item.hours || "09:00-21:30",
-        mapUrl: item.mapUrl || ""
+        mapUrl: item.mapUrl || mapsSearchUrl(item.address)
       };
     });
+  }
+
+  function mapsSearchUrl(address) {
+    var query = String(address || "").trim();
+    if (!query) return "";
+    return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query);
+  }
+
+  function ensureBranchMaps(list) {
+    (list || []).forEach(function (item) {
+      if (!item) return;
+      if (!String(item.mapUrl || "").trim() && item.address) {
+        item.mapUrl = mapsSearchUrl(item.address);
+      }
+    });
+    return list;
+  }
+
+  function isGeneratedMap(url) {
+    return /google\.com\/maps\/search\/\?api=1/i.test(String(url || ""));
+  }
+
+  function pickMapUrl(current, other) {
+    var a = String(current || "").trim();
+    var b = String(other || "").trim();
+    if (b && (!a || (isGeneratedMap(a) && !isGeneratedMap(b)))) return b;
+    return a || b;
+  }
+
+  function mergeBranches(target, extra) {
+    if (!target || !extra || !extra.branches) return target;
+    var byId = {};
+    var byName = {};
+    (extra.branches || []).forEach(function (item) {
+      if (!item) return;
+      if (item.id) byId[item.id] = item;
+      if (item.name) byName[item.name] = item;
+    });
+    (target.branches || []).forEach(function (item) {
+      var other = (item.id && byId[item.id]) || (item.name && byName[item.name]);
+      if (!other) return;
+      item.mapUrl = pickMapUrl(item.mapUrl, other.mapUrl);
+      if (!item.hours && other.hours) item.hours = other.hours;
+      if (!item.phone && other.phone) item.phone = other.phone;
+    });
+    return target;
   }
 
   function defaultSliderSettings() {
@@ -611,6 +657,7 @@
         mergeById(parsed, incoming, "reviews");
         mergePublished(parsed, incoming, "banners");
         mergePublished(parsed, incoming, "sliders");
+        mergeBranches(parsed, incoming);
         persist(parsed);
       } else if (file) {
         mergeInbound(parsed, file);
@@ -619,6 +666,7 @@
         mergeById(parsed, file, "reviews");
         mergePublished(parsed, file, "banners");
         mergePublished(parsed, file, "sliders");
+        mergeBranches(parsed, file);
       }
       var fresh = seed();
       Object.keys(fresh).forEach(function (key) {
@@ -633,7 +681,14 @@
         return item.name === "Kartal / Yakacık" || item.name === "Kadıköy / Caferağa";
       });
       if (oldBranches) {
+        var keptMaps = {};
+        (parsed.branches || []).forEach(function (item) {
+          if (item && item.name && item.mapUrl) keptMaps[item.name] = item.mapUrl;
+        });
         parsed.branches = fresh.branches;
+        parsed.branches.forEach(function (item) {
+          if (keptMaps[item.name]) item.mapUrl = keptMaps[item.name];
+        });
         parsed.branchesVersion = 2;
       } else if ((parsed.branchesVersion || 0) < 2) {
         (parsed.branches || []).forEach(function (item) {
@@ -641,6 +696,7 @@
         });
         parsed.branchesVersion = 2;
       }
+      ensureBranchMaps(parsed.branches);
       if ((parsed.settings || {}).address === "Yakacık Caddesi No:130/2, İstanbul / Kartal") {
         parsed.settings.address = fresh.settings.address;
       }

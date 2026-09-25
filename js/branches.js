@@ -34,6 +34,9 @@
 
   function mapHref(item) {
     var url = String(item.mapUrl || "").trim();
+    if (!url && item && item.address) {
+      url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(item.address);
+    }
     if (!url) return "";
     if (/^https?:\/\//i.test(url)) return url;
     return "https://" + url.replace(/^\/\//, "");
