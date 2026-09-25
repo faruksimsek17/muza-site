@@ -287,25 +287,39 @@
     return src.split("/").pop();
   }
 
+  function storeImageFile(key, file) {
+    var ext = GrosperFiles.extFromType(file.type, "jpg");
+    var name = GrosperFiles.safeName(key) + "." + ext;
+    return GrosperFiles.put(key, file).then(function () {
+      if (!GrosperFiles.upload) return "idb:" + key;
+      return GrosperFiles.upload(name, file).then(function (saved) {
+        if (saved && saved.path) return "../" + String(saved.path).replace(/^\.\.\//, "");
+        return "idb:" + key;
+      }).catch(function () {
+        return "idb:" + key;
+      });
+    });
+  }
+
   function renderBanners() {
     if (editing === "new" || (editing && editing.id)) {
       var item = editing === "new" ? { title: "", image: "", link: "#kategoriler", status: "yayinda" } : editing;
       var image = item.image || item.desktopImage || "";
       return panel("Banner düzenle", "", (
-        '<form class="editor" data-id="' + escapeHtml(item.id || "") + '">' +
+        '<form class="editor" data-id="' + escapeHtml(item.id || "") + '" data-banner-form>' +
           '<div class="form-grid">' +
             field("Başlık", "title", item.title) +
             field("Durum", "status", item.status || "yayinda", "select") +
             field("Tıklanınca gidilecek link", "link", item.link || "#kategoriler", "text", true) +
             '<div class="full upload-field">' +
               "<strong>Banner görseli</strong>" +
-              '<p class="upload-hint">Dosya seçerek görseli değiştirin. Kayıt sonrası ana sayfada görünür.</p>' +
-              (image ? '<img class="upload-preview" src="' + escapeHtml(image) + '" alt="">' : "") +
+              '<p class="upload-hint">Dosya seçerek görseli değiştirin. Kayıt klasöre yazılır ve ana sayfada görünür. En fazla 5 MB.</p>' +
+              sliderImagePreview(image, "Banner görseli yükleyin") +
               '<div class="file-row">' +
                 '<label class="file-btn">Dosya Seç<input type="file" accept="image/*" data-file="image" hidden></label>' +
-                '<span class="file-name" data-filename="image">' + escapeHtml(fileName(image)) + "</span>" +
+                '<span class="file-name" data-filename="image">' + escapeHtml(fileName(image, "Görsel seçildi")) + "</span>" +
               "</div>" +
-              '<input type="hidden" name="image" value="' + escapeHtml(image) + '">' +
+              '<input type="hidden" name="image" value="' + escapeHtml(lightRef(image)) + '">' +
             "</div>" +
           "</div>" +
           '<div class="form-actions">' +
@@ -316,8 +330,7 @@
       ));
     }
     return panel("Blok bannerlar", addButton(), table(["Görsel", "Başlık", "Link", "Durum", ""], rowsFrom(GrosperStore.list("banners"), function (item) {
-      var img = item.image || item.desktopImage || "";
-      return "<tr><td><img class='thumb' src='" + escapeHtml(img) + "' alt=''></td><td>" + escapeHtml(item.title) + "</td><td>" + escapeHtml(item.link || "") + "</td><td>" + statusBadge(item.status) + "</td><td>" + actions(item.id) + "</td></tr>";
+      return "<tr><td>" + sliderThumb(item.image || item.desktopImage || "") + "</td><td>" + escapeHtml(item.title) + "</td><td>" + escapeHtml(item.link || "") + "</td><td>" + statusBadge(item.status) + "</td><td>" + actions(item.id) + "</td></tr>";
     })));
   }
 
@@ -1176,6 +1189,7 @@
     var brandForm = !!root.querySelector("[data-brand-form]");
     var sliderForm = !!root.querySelector("[data-slider-form]");
     var galleryForm = !!root.querySelector("[data-gallery-form]");
+    var bannerForm = !!root.querySelector("[data-banner-form]");
     root.querySelectorAll("[data-file]").forEach(function (input) {
       input.addEventListener("change", function () {
         var file = input.files && input.files[0];
@@ -1184,7 +1198,7 @@
         var isPdf = name === "pdf" || file.type === "application/pdf";
         var aboutDocForm = !!root.querySelector('[data-about-item="documents"]');
         var aboutSectionForm = !!root.querySelector('[data-about-item="corporate"]');
-        var storeFile = isPdf || (catalogForm && name === "image") || brandForm || sliderForm || galleryForm || (aboutDocForm && name === "file") || (aboutSectionForm && name === "image");
+        var storeFile = isPdf || (catalogForm && name === "image") || brandForm || sliderForm || galleryForm || bannerForm || (aboutDocForm && name === "file") || (aboutSectionForm && name === "image");
         if (storeFile) {
           if (isPdf && file.size > MAX_PDF_BYTES) {
             toast("PDF 20 MB’den büyük olamaz");
@@ -1212,6 +1226,11 @@
             return;
           }
           if (galleryForm && file.size > MAX_BRAND_BYTES) {
+            toast("Görsel 5 MB’den büyük olamaz");
+            input.value = "";
+            return;
+          }
+          if (bannerForm && file.size > MAX_BRAND_BYTES) {
             toast("Görsel 5 MB’den büyük olamaz");
             input.value = "";
             return;
@@ -1253,6 +1272,10 @@
           if (galleryForm) {
             var galleryFormEl = input.closest("form");
             if (galleryFormEl) galleryFormEl._galleryFile = file;
+          }
+          if (bannerForm) {
+            var bannerFormEl = input.closest("form");
+            if (bannerFormEl) bannerFormEl._bannerFile = file;
           }
           var box = input.closest(".brand-field") || input.closest(".upload-field");
           if (box) {
@@ -1376,6 +1399,42 @@
       var imageKey = "gallery-" + item.id;
       GrosperFiles.put(imageKey, imageFile).then(function () {
         item.image = "idb:" + imageKey;
+        finish();
+      }).catch(function () {
+        toast("Dosya kaydedilemedi. Sayfayı yenileyip tekrar deneyin.");
+      });
+      return;
+    }
+    finish();
+  }
+
+  function saveBanner(form, current) {
+    var item = formToItem(form, current);
+    if (item.image === "pending" || (item.image && item.image.indexOf("data:") === 0)) {
+      item.image = current && current.image && current.image.indexOf("data:") !== 0 ? current.image : "";
+    }
+    if (!item.id) item.id = GrosperStore.uid();
+    var imageInput = form.querySelector('[data-file="image"]');
+    var imageFile = form._bannerFile || (imageInput && imageInput.files && imageInput.files[0]);
+
+    function finish() {
+      GrosperStore.upsert("banners", item);
+      toast("Kayıt kaydedildi");
+      editing = null;
+      render();
+    }
+
+    if (imageFile && imageFile.size > MAX_BRAND_BYTES) {
+      toast("Görsel 5 MB’den büyük olamaz");
+      return;
+    }
+    if (imageFile && !window.GrosperFiles) {
+      toast("Dosya kaydedilemedi. Sayfayı yenileyip tekrar deneyin.");
+      return;
+    }
+    if (imageFile) {
+      storeImageFile("banner-" + item.id, imageFile).then(function (path) {
+        item.image = path;
         finish();
       }).catch(function () {
         toast("Dosya kaydedilemedi. Sayfayı yenileyip tekrar deneyin.");
@@ -1753,6 +1812,10 @@
       }
       if (view === "gallery") {
         saveGallery(form, current);
+        return;
+      }
+      if (view === "banners") {
+        saveBanner(form, current);
         return;
       }
       try {

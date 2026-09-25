@@ -234,7 +234,10 @@
       if (isDataUrl(item.mobileImage)) item.mobileImage = "";
     });
     (data.banners || []).forEach(function (item) {
-      stripItemBinaries(item, "../images/banner-zuccaciye.webp");
+      if (isDataUrl(item.image) || isDataUrl(item.desktopImage)) {
+        item.image = "";
+        if (item.desktopImage) item.desktopImage = "";
+      }
     });
     (data.news || []).forEach(function (item) {
       stripItemBinaries(item, "../images/fruits.jpg");
@@ -435,12 +438,25 @@
   var INBOUND_KEYS = ["jobs", "subscribers"];
   var INBOX_LS = "grosper-inbox-v1";
 
-  function mergeById(target, extra, key) {
+  function mediaScore(item) {
+    var img = String((item && (item.image || item.desktopImage)) || "");
+    if (img.indexOf("uploads/") !== -1) return 5;
+    if (img.indexOf("idb:") === 0) return 4;
+    if (img.indexOf("data:") === 0) return 3;
+    if (/banner-(zuccaciye|disbakim|deepep)/.test(img)) return 1;
+    return img ? 2 : 0;
+  }
+
+  function pickRicher(a, b) {
+    return mediaScore(b) >= mediaScore(a) ? b : a;
+  }
+
+  function mergeById(target, extra, key, pick) {
     if (!target || !extra) return target;
     var map = {};
     (target[key] || []).concat(extra[key] || []).forEach(function (item) {
       if (!item || !item.id) return;
-      map[item.id] = item;
+      map[item.id] = map[item.id] && pick ? pick(map[item.id], item) : item;
     });
     target[key] = Object.keys(map).map(function (id) {
       return map[id];
@@ -564,11 +580,15 @@
         parsed = cloneData(file);
         mergeInbound(parsed, incoming);
         mergeById(parsed, incoming, "reviews");
+        mergeById(parsed, incoming, "banners", pickRicher);
         persist(parsed);
       } else if (file) {
         mergeInbound(parsed, file);
       }
-      if (file) mergeById(parsed, file, "reviews");
+      if (file) {
+        mergeById(parsed, file, "reviews");
+        mergeById(parsed, file, "banners", pickRicher);
+      }
       var fresh = seed();
       Object.keys(fresh).forEach(function (key) {
         if (key === "catalogFileVersion" || key === "branchesVersion") return;

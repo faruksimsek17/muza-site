@@ -1,10 +1,10 @@
 (function () {
-  var cards = document.querySelectorAll(".promo-grid .promo");
-  if (!cards.length || !window.GrosperStore) return;
+  var grid = document.querySelector(".promo-grid");
+  if (!grid || !window.GrosperStore) return;
 
   function publicSrc(src) {
     if (!src) return "";
-    if (src.indexOf("data:") === 0 || src.indexOf("http") === 0) return src;
+    if (src.indexOf("data:") === 0 || src.indexOf("http") === 0 || src.indexOf("idb:") === 0) return src;
     return src.replace(/^\.\.\//, "");
   }
 
@@ -14,20 +14,44 @@
     return link.replace(/^\.\.\//, "");
   }
 
-  var banners = GrosperStore.list("banners").filter(function (item) {
-    return item.status !== "taslak";
-  });
+  function escapeHtml(value) {
+    return String(value == null ? "" : value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
 
-  banners.forEach(function (item, index) {
-    var card = cards[index];
-    if (!card) return;
-    var image = publicSrc(item.image || item.desktopImage || "");
-    var img = card.querySelector("img");
-    if (image && img) {
-      img.src = image;
-      img.alt = item.title || img.alt;
+  function setSrc(img, src) {
+    if (!img || !src) return;
+    if (src.indexOf("idb:") === 0 && window.GrosperFiles) {
+      GrosperFiles.get(src.slice(4)).then(function (blob) {
+        if (blob) img.src = URL.createObjectURL(blob);
+      });
+      return;
     }
-    card.setAttribute("href", publicHref(item.link));
+    img.src = publicSrc(src);
+  }
+
+  var banners = GrosperStore.list("banners").filter(function (item) {
+    return item && item.status !== "taslak" && (item.image || item.desktopImage);
+  });
+  if (!banners.length) return;
+
+  grid.innerHTML = banners.map(function (item) {
+    var src = item.image || item.desktopImage || "";
+    var idb = src.indexOf("idb:") === 0;
+    return (
+      '<a class="promo" href="' + escapeHtml(publicHref(item.link)) + '">' +
+        '<img src="' + escapeHtml(idb ? "" : publicSrc(src)) + '" alt="' + escapeHtml(item.title || "") + '"' +
+          (idb ? ' data-idb="' + escapeHtml(src.slice(4)) + '"' : "") +
+        ">" +
+      "</a>"
+    );
+  }).join("");
+
+  grid.querySelectorAll("img[data-idb]").forEach(function (img) {
+    setSrc(img, "idb:" + img.getAttribute("data-idb"));
   });
 })();
 
