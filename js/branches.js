@@ -33,9 +33,13 @@
   }
 
   function mapHref(item) {
-    var url = String(item.mapUrl || "").trim();
-    if (!url && item && item.address) {
-      url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(item.address);
+    var url = String((item && item.mapUrl) || "").trim();
+    var address = String((item && item.address) || "").trim();
+    if (!url && address) {
+      url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(address);
+    }
+    if (!url && item && item.name) {
+      url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("Grosper " + item.name + " İstanbul");
     }
     if (!url) return "";
     if (/^https?:\/\//i.test(url)) return url;

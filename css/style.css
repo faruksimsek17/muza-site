@@ -1618,9 +1618,9 @@ body[data-about="corporate"] {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 1 1 0;
+  flex: 1 1 auto;
   gap: 5px;
-  min-width: 0;
+  min-width: min-content;
   min-height: 28px;
   padding: 4px 8px;
   border-radius: 999px;
@@ -1632,7 +1632,6 @@ body[data-about="corporate"] {
   line-height: 1;
   text-decoration: none;
   white-space: nowrap;
-  overflow: hidden;
 }
 
 .branch-pill svg {
@@ -1658,6 +1657,7 @@ body[data-about="corporate"] {
 }
 
 .branch-pill--map {
+  flex: 1 1 100%;
   border-color: var(--red);
   color: var(--red);
 }

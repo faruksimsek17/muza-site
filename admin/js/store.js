@@ -766,7 +766,9 @@
 
   function list(collection) {
     var data = read();
-    return data[collection] || [];
+    var items = data[collection] || [];
+    if (collection === "branches") ensureBranchMaps(items);
+    return items;
   }
 
   function saveAll(collection, items, options) {
