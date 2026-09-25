@@ -34,7 +34,9 @@
   }
 
   var banners = GrosperStore.list("banners").filter(function (item) {
-    return item && item.status !== "taslak" && (item.image || item.desktopImage);
+    var img = String((item && (item.image || item.desktopImage)) || "");
+    if (/banner-(zuccaciye|disbakim|deepep)\.webp/i.test(img)) return false;
+    return item && item.status !== "taslak" && img;
   });
   if (!banners.length) return;
 
@@ -92,7 +94,9 @@
   }
 
   var sliders = GrosperStore.list("sliders").filter(function (item) {
-    return item.status !== "taslak" && (item.image || item.desktopImage);
+    var img = String((item && (item.image || item.desktopImage)) || "");
+    if (/slider-(kartlar|bulten|sube)\.jpg/i.test(img) || /eggs\.jpg/i.test(img)) return false;
+    return item && item.status !== "taslak" && img;
   });
   if (!sliders.length) return;
 

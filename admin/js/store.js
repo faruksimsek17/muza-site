@@ -76,14 +76,14 @@
     return {
       sliderSettings: defaultSliderSettings(),
       sliders: [
-        { id: uid(), title: "Yemek kartları", text: "Tüm alışverişlerinizde geçerli 0 komisyonlu yemek kartları.", image: "../images/slider-kartlar.jpg", mobileImage: "", link: "#kategoriler", status: "yayinda" },
-        { id: uid(), title: "İndirim bülteni", text: "2–14 Eylül indirim bültenimiz yayında.", image: "../images/slider-bulten.jpg", mobileImage: "", link: "../sayfalar/bulten.html", status: "yayinda" },
-        { id: uid(), title: "Taşdelen şube açılışı", text: "2–28 Eylül şube açılış indirimleri.", image: "../images/slider-sube.jpg", mobileImage: "", link: "../sayfalar/subeler.html", status: "yayinda" }
+        { id: "id-mtx0x9ntqhbl9", title: "Yemek kartları", text: "Tüm alışverişlerinizde geçerli 0 komisyonlu yemek kartları.", image: "../images/slider-kartlar.png", mobileImage: "../images/slider-kartlar-mobil.png", link: "#kategoriler", status: "yayinda" },
+        { id: "id-mtx0x9ntpbexn", title: "İndirim bülteni", text: "2–14 Eylül indirim bültenimiz yayında.", image: "../images/slider-bulten.png", mobileImage: "../images/slider-bulten-mobil.png", link: "../sayfalar/bulten.html", status: "yayinda" },
+        { id: "id-mtx0x9ntn2023", title: "Taşdelen şube açılışı", text: "2–28 Eylül şube açılış indirimleri.", image: "../images/slider-alisverise-deger.png", mobileImage: "", link: "../sayfalar/subeler.html", status: "yayinda" }
       ],
       banners: [
-        { id: uid(), title: "Züccaciye fırsatları", image: "../images/banner-zuccaciye.webp", link: "../#kategoriler", status: "yayinda" },
-        { id: uid(), title: "Diş bakımında %25", image: "../images/banner-disbakim.webp", link: "../#kategoriler", status: "yayinda" },
-        { id: uid(), title: "Deepep Solution", image: "../images/banner-deepep.webp", link: "../#kategoriler", status: "yayinda" }
+        { id: "id-mtx0x9nthjve4", title: "Züccaciye fırsatları", image: "../images/uploads/banner-id-mtx0x9nthjve4.png", link: "../#kategoriler", status: "yayinda" },
+        { id: "id-mtx0x9ntezo2k", title: "Diş bakımında %25", image: "../images/uploads/banner-id-mtx0x9ntezo2k.png", link: "../#kategoriler", status: "yayinda" },
+        { id: "id-mtx0x9ntnfu6s", title: "Deepep Solution", image: "../images/uploads/banner-id-mtx0x9ntnfu6s.png", link: "../#kategoriler", status: "yayinda" }
       ],
       news: [
         { id: uid(), date: "2026-09-08", title: "Yerli meyve haftası başladı", summary: "Eylül boyunca seçili meyvelerde yüzde 25’e varan indirim var.", body: "Grosper raflarına bu hafta yerli şeftali, üzüm ve elma geldi. Çiftçiden doğrudan alım sayesinde hem tazelik korunuyor hem fiyatlar düşüyor.", image: "../images/fruits.jpg", status: "yayinda" },
@@ -451,6 +451,35 @@
     return mediaScore(b) >= mediaScore(a) ? b : a;
   }
 
+  function isLegacyMedia(item) {
+    var img = String((item && (item.image || item.desktopImage || item.mobileImage)) || "");
+    return /banner-(zuccaciye|disbakim|deepep)\.webp/i.test(img)
+      || /slider-(kartlar|bulten|sube)\.jpg/i.test(img)
+      || /eggs\.jpg/i.test(img);
+  }
+
+  function dropLegacy(list) {
+    return (list || []).filter(function (item) {
+      return item && item.id && !isLegacyMedia(item);
+    });
+  }
+
+  function mergePublished(target, extra, key) {
+    if (!target || !extra) return target;
+    var map = {};
+    (target[key] || []).forEach(function (item) {
+      if (item && item.id && !isLegacyMedia(item)) map[item.id] = item;
+    });
+    (extra[key] || []).forEach(function (item) {
+      if (!item || !item.id || isLegacyMedia(item)) return;
+      map[item.id] = map[item.id] ? pickRicher(map[item.id], item) : item;
+    });
+    target[key] = Object.keys(map).map(function (id) {
+      return map[id];
+    });
+    return target;
+  }
+
   function mergeById(target, extra, key, pick) {
     if (!target || !extra) return target;
     var map = {};
@@ -580,14 +609,16 @@
         parsed = cloneData(file);
         mergeInbound(parsed, incoming);
         mergeById(parsed, incoming, "reviews");
-        mergeById(parsed, incoming, "banners", pickRicher);
+        mergePublished(parsed, incoming, "banners");
+        mergePublished(parsed, incoming, "sliders");
         persist(parsed);
       } else if (file) {
         mergeInbound(parsed, file);
       }
       if (file) {
         mergeById(parsed, file, "reviews");
-        mergeById(parsed, file, "banners", pickRicher);
+        mergePublished(parsed, file, "banners");
+        mergePublished(parsed, file, "sliders");
       }
       var fresh = seed();
       Object.keys(fresh).forEach(function (key) {
@@ -614,9 +645,15 @@
         parsed.settings.address = fresh.settings.address;
       }
       var oldSlider = (parsed.sliders || []).some(function (item) {
-        return item.title === "Tatil promosyonları" || (item.image || "").indexOf("eggs.jpg") !== -1;
+        return item.title === "Tatil promosyonları" || isLegacyMedia(item);
       });
-      if (oldSlider) parsed.sliders = fresh.sliders;
+      if (oldSlider) {
+        parsed.sliders = dropLegacy((file && file.sliders) || fresh.sliders);
+      }
+      parsed.banners = dropLegacy(parsed.banners);
+      parsed.sliders = dropLegacy(parsed.sliders);
+      if (file && file.banners && !parsed.banners.length) parsed.banners = dropLegacy(file.banners);
+      if (file && file.sliders && !parsed.sliders.length) parsed.sliders = dropLegacy(file.sliders);
       stripCatalogs(parsed);
       (parsed.catalogs || []).forEach(function (item, index) {
         if (item.productsLink == null) {
