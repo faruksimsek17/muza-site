@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=26">
+  <link rel="stylesheet" href="css/style.css?v=29">
   <script src="js/theme.js?v=8"></script>
 </head>
 <body data-page="home" data-root="">
@@ -23,14 +23,16 @@
             <svg viewBox="0 0 24 24" fill="none"><path d="M15 6 9 12l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </button>
             <div class="hero-slider__track">
-              <a class="hero-slide hero-slider__slide" href="#kategoriler" aria-hidden="false">
-                <img src="images/slider-kartlar.jpg" alt="Grosper yemek kartları">
+              <a class="hero-slide hero-slider__slide has-mobile" href="#kategoriler" aria-hidden="false">
+                <img class="hero-slide__img hero-slide__img--desk" src="images/slider-kartlar.png" alt="Yemek kartları">
+                <img class="hero-slide__img hero-slide__img--mob" src="images/slider-kartlar-mobil.png" alt="Yemek kartları">
               </a>
-              <a class="hero-slide hero-slider__slide" href="sayfalar/bulten.html" aria-hidden="true">
-                <img src="images/slider-bulten.jpg" alt="İndirim bültenimiz yayında">
+              <a class="hero-slide hero-slider__slide has-mobile" href="sayfalar/bulten.html" aria-hidden="true">
+                <img class="hero-slide__img hero-slide__img--desk" src="images/slider-bulten.png" alt="İndirim bülteni">
+                <img class="hero-slide__img hero-slide__img--mob" src="images/slider-bulten-mobil.png" alt="İndirim bülteni">
               </a>
               <a class="hero-slide hero-slider__slide" href="sayfalar/subeler.html" aria-hidden="true">
-                <img src="images/slider-sube.jpg" alt="Taşdelen şube açılış indirimleri">
+                <img class="hero-slide__img hero-slide__img--desk" src="images/slider-alisverise-deger.png" alt="Taşdelen şube açılışı">
               </a>
             </div>
           <button class="hero__arrow hero__arrow--next" type="button" data-hero-next aria-label="Sonraki slayt">
@@ -52,29 +54,29 @@
         <h2 class="section__title">öne çıkan kategoriler</h2>
         <div class="cat-grid">
           <article class="cat-banner cat-banner--lg" data-category>
-            <img src="images/fruits.jpg" alt="Taze meyveler">
-            <h3>meyveler</h3>
+            <img src="images/cat-meyve-sebze.png" alt="Meyve ve sebze">
+            <h3>meyve ve sebze</h3>
           </article>
           <article class="cat-banner cat-banner--lg" data-category>
-            <img src="images/vegetables.jpg" alt="Taze sebzeler">
-            <h3>sebzeler</h3>
+            <img src="images/cat-et.png" alt="Et reyonu">
+            <h3>et reyonu</h3>
           </article>
           <div class="cat-grid__small">
             <article class="cat-banner" data-category>
-              <img src="images/bread.jpg" alt="Ekmek">
-              <h3>ekmek ve fırın</h3>
+              <img src="images/cat-sarkuteri.png" alt="Şarküteri">
+              <h3>şarküteri</h3>
+            </article>
+            <article class="cat-banner cat-banner--contain" data-category>
+              <img src="images/cat-temel-gida.jpg" alt="Temel gıda">
+              <h3>temel gıda</h3>
             </article>
             <article class="cat-banner" data-category>
-              <img src="images/meat.jpg" alt="Et ürünleri">
-              <h3>et ve kümes hayvanları</h3>
+              <img src="images/cat-temizlik.jpg" alt="Temizlik">
+              <h3>temizlik</h3>
             </article>
             <article class="cat-banner" data-category>
-              <img src="images/drinks.jpg" alt="İçecekler">
+              <img src="images/cat-icecekler.png" alt="İçecekler">
               <h3>içecekler</h3>
-            </article>
-            <article class="cat-banner" data-category>
-              <img src="images/chips.jpg" alt="Atıştırmalıklar">
-              <h3>atıştırmalık ve cipsler</h3>
             </article>
           </div>
         </div>
@@ -84,13 +86,13 @@
     <section class="section promos">
       <div class="container promo-grid">
         <a class="promo" href="#kategoriler">
-          <img src="images/banner-zuccaciye.webp" alt="Züccaciye ürünlerinde fırsat indirimleri">
+          <img src="images/uploads/banner-id-mtx0x9nthjve4.png" alt="Züccaciye fırsatları">
         </a>
         <a class="promo" href="#kategoriler">
-          <img src="images/banner-disbakim.webp" alt="Seçili Sensodyne ve Parodontax ürünlerinde yüzde 25 indirim">
+          <img src="images/uploads/banner-id-mtx0x9ntezo2k.png" alt="Diş bakımında %25">
         </a>
         <a class="promo" href="#kategoriler">
-          <img src="images/banner-deepep.webp" alt="Deepep Solution şampuanları şimdi Çağrı'da">
+          <img src="images/uploads/banner-id-mtx0x9ntnfu6s.png" alt="Deepep Solution">
         </a>
       </div>
     </section>
@@ -137,14 +139,14 @@
   </main>
 
   <div id="site-footer"></div>
-  <script src="data/cms.js?v=7"></script>
-  <script src="data/inbox.js?v=1"></script>
-  <script src="admin/js/store.js?v=28"></script>
+  <script src="data/cms.js?v=10"></script>
+  <script src="data/inbox.js?v=2"></script>
+  <script src="admin/js/store.js?v=29"></script>
   <script src="admin/js/files.js?v=9"></script>
   <script src="js/brand.js?v=2"></script>
-  <script src="js/banners.js?v=6"></script>
-  <script src="js/categories.js?v=2"></script>
-  <script src="js/hero.js?v=1"></script>
+  <script src="js/banners.js?v=7"></script>
+  <script src="js/categories.js?v=3"></script>
+  <script src="js/hero.js?v=2"></script>
   <script src="js/newsletter.js?v=2"></script>
 </body>
 </html>
